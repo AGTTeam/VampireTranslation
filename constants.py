@@ -3,6 +3,13 @@
 # From end to end2, it's just scripts
 mainptr = {"offset": 0x0b2ce0, "end": 0x13a3a8, "end2": 0x1ae1af}
 
+# Value for wordwrapping (WIP)
+wordwrap = 170
+
+# Maximum number of characters the game can print
+maxchars = 80
+
+
 # Pointers to various strings, with "offset" and pointer "count"
 # If "main" is set to true, these are mixed in with normal text
 # If "dataonly" is set to true, they will be just exported as data without string parsing

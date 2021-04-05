@@ -61,6 +61,7 @@ def formatString(str):
 
 def writeString(f, s, table):
     group = 0
+    totchars = 0
     for stringcode in constants.stringcodes:
         s = s.replace(constants.stringcodes[stringcode], stringcode)
     x = 0
@@ -75,14 +76,18 @@ def writeString(f, s, table):
             x += 3
         else:
             if c not in table:
-                common.logError("Character", c, "not found")
+                common.logError("Character", c, "not found for string", s)
             else:
+                if totchars > constants.maxchars:
+                    common.logWarning("String", s, "is too long, skipping character", c)
+                    continue
                 charcode = table[c]
                 chargroup = charcode >> 8
                 if group != chargroup:
                     group = chargroup
                     f.writeByte(group)
                 f.writeByte(charcode & 0xff)
+                totchars += 1
     f.writeByte(0x0)
 
 

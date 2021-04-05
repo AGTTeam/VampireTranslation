@@ -1,9 +1,9 @@
 import os
 import click
-from hacktools import common, nds, nitro
+from hacktools import common, nds
 import game
 
-version = "0.3.0"
+version = "0.3.1"
 data = "VampireData/"
 romfile = data + "vampire.nds"
 rompatch = data + "vampire_patched.nds"
@@ -40,11 +40,13 @@ def extract(rom, bin, bmp, img):
 @click.option("--bin", is_flag=True, default=False)
 @click.option("--bmp", is_flag=True, default=False)
 @click.option("--img", is_flag=True, default=False)
-def repack(no_rom, bin, img):
-    all = not bin and not img
+def repack(no_rom, bin, bmp, img):
+    all = not bin and not bmp and not img
     if all or bin:
         import repack_bin
         repack_bin.run(data)
+    if all or img:
+        pass
     if all or img:
         pass
 
