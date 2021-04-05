@@ -1,0 +1,7 @@
+__pycache__
+
+build
+VampireData
+*.log
+*.exe
+notes.md
