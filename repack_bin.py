@@ -8,9 +8,11 @@ import game
 def run(data):
     infile = data + "extract/arm9.bin"
     outfile = data + "repack/arm9.bin"
+    fontdata = data + "font_data.bin"
     binfile = data + "bin_input.txt"
     # datfile = data + "dat_input.txt"
     table, invtable = game.getTable(data)
+    glyphs = game.getGlyphs(data)
 
     if not os.path.isfile(binfile):
         common.logError("Input file", binfile, "not found")
@@ -42,7 +44,7 @@ def run(data):
                 common.logDebug("Writing string", string, "at", common.toHex(f.tell()))
                 game.writeString(f, string, table)
                 f.writeByte(0)
-            common.logMessage("Finished at", common.toHex(f.tell()))
+            common.logDebug("Finished at", common.toHex(f.tell()))
             # Change pointers
             for ptrgroup in ptrgroups:
                 for ptr in ptrgroups[ptrgroup]:
@@ -61,3 +63,10 @@ def run(data):
                         f.writeUInt(0x02000000 + strings[jpstr])
 
     common.logMessage("Done! Translation is at {0:.2f}%".format((100 * transtot) / chartot))
+
+    # Export font data and apply armips patch
+    with common.Stream(fontdata, "wb") as f:
+        for charcode in range(0x9010, 0x908f + 1):
+            c = invtable[charcode]
+            f.writeByte(glyphs[c].width)
+    common.armipsPatch("bin_patch.asm")

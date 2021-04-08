@@ -171,16 +171,31 @@ def readANCG(f):
 
 
 def getTable(data):
-    if not os.path.isfile(data + "table.txt"):
-        common.logError("table.txt file not found")
-        return
-    with codecs.open(data + "table.txt", "r", "utf-8") as tablef:
-        section = common.getSection(tablef, "")
     table = {}
     invtable = {}
+    if not os.path.isfile(data + "table.txt"):
+        common.logError("table.txt file not found")
+        return table, invtable
+    with codecs.open(data + "table.txt", "r", "utf-8") as tablef:
+        section = common.getSection(tablef, "", comment="##")
     for code in section:
         glyph = section[code][0]
+        glyph = glyph.replace("<3D>", "=")
         codehex = int(code, 16)
         table[glyph] = codehex
         invtable[codehex] = glyph
     return table, invtable
+
+
+def getGlyphs(data):
+    glyphs = {}
+    if not os.path.isfile(data + "fontconfig.txt"):
+        common.logError("fontconfig.txt file not found")
+        return glyphs
+    with codecs.open(data + "fontconfig.txt", "r", "utf-8") as f:
+        fontconfig = common.getSection(f, "", comment="##")
+        for c in fontconfig:
+            charlen = 0 if fontconfig[c][0] == "" else int(fontconfig[c][0])
+            c = c.replace("<3D>", "=")
+            glyphs[c] = common.FontGlyph(0, charlen, charlen + 1)
+    return glyphs

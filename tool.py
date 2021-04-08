@@ -3,7 +3,7 @@ import click
 from hacktools import common, nds
 import game
 
-version = "0.3.1"
+version = "0.5.0"
 data = "VampireData/"
 romfile = data + "vampire.nds"
 rompatch = data + "vampire_patched.nds"
@@ -19,9 +19,10 @@ outfolder = data + "repack/"
 @click.option("--rom", is_flag=True, default=False)
 @click.option("--bin", is_flag=True, default=False)
 @click.option("--bmp", is_flag=True, default=False)
+@click.option("--fdt", is_flag=True, default=False)
 @click.option("--img", is_flag=True, default=False)
-def extract(rom, bin, bmp, img):
-    all = not rom and not bin and not bmp and not img
+def extract(rom, bin, bmp, fdt, img):
+    all = not rom and not bin and not bmp and not fdt and not img
     if all or rom:
         nds.extractRom(romfile, infolder, outfolder)
     if all or bin:
@@ -30,6 +31,9 @@ def extract(rom, bin, bmp, img):
     if all or bmp:
         import extract_bmp
         extract_bmp.run(data)
+    if all or fdt:
+        import extract_fdt
+        extract_fdt.run(data)
     if all or img:
         import extract_img
         extract_img.run(data)
@@ -38,17 +42,22 @@ def extract(rom, bin, bmp, img):
 @common.cli.command()
 @click.option("--no-rom", is_flag=True, default=False)
 @click.option("--bin", is_flag=True, default=False)
-@click.option("--bmp", is_flag=True, default=False)
+@click.option("--fdt", is_flag=True, default=False)
 @click.option("--img", is_flag=True, default=False)
-def repack(no_rom, bin, bmp, img):
-    all = not bin and not bmp and not img
+@click.option("--bmp", is_flag=True, default=False)
+def repack(no_rom, bin, fdt, img, bmp):
+    all = not bin and not fdt and not img and not bmp
     if all or bin:
         import repack_bin
         repack_bin.run(data)
+    if all or fdt:
+        import repack_fdt
+        repack_fdt.run(data)
     if all or img:
         pass
-    if all or img:
-        pass
+    if all or bmp:
+        import repack_bmp
+        repack_bmp.run(data)
 
     if not no_rom:
         if os.path.isdir(replacefolder):

@@ -7,6 +7,7 @@ def run(data):
     infile = data + "extract/arm9.bin"
     infolder = data + "extract/data/bmp/"
     outfolder = data + "extract_BMP/"
+    workfolder = data + "repack_BMP/"
 
     common.logMessage("Extracting BMP to", outfolder, "...")
     common.makeFolder(outfolder)
@@ -14,7 +15,7 @@ def run(data):
         offsets = game.getBMPOffsets(f, infolder)
     files = common.getFiles(infolder, ".R00")
     for file in common.showProgress(files):
-        # if file != "Flash_data.R00":
+        # if file != "FDT.R00":
         #    continue
         size = os.path.getsize(infolder + file)
         with common.Stream(infolder + file, "rb", False) as f:
@@ -23,8 +24,9 @@ def run(data):
             common.makeFolder(folder)
             try:
                 decompress(f, offsets[file] if file in offsets else [], size, folder)
-            except OSError:
+            except Exception:
                 common.logError("OSError")
+    common.copyFolder(outfolder, workfolder)
     common.logMessage("Done! Extracted", len(files), "files")
 
 
@@ -70,8 +72,8 @@ def decompress(f, offsets, size, out):
                     offset = f.readByte()
                     offset |= ((mask & 3) << 8)
                     offset += 1
-                    # common.logDebug("count", common.toHex(count), "offset", common.toHex(offset), common.toHex(fout.tell()))
                     pos = fout.tell()
+                    # common.logDebug("count", common.toHex(count), "offset", common.toHex(offset), common.toHex(pos))
                     for j in range(count):
                         byte = fout.readByteAt(pos - offset + j)
                         fout.writeByte(byte)
