@@ -29,7 +29,7 @@ def run(data):
             if jpstr in section and section[jpstr][0] != "":
                 translations[jpstr] = section[jpstr][0]
                 if section[jpstr][0] not in strings:
-                    strings[section[jpstr][0]] = 0
+                    strings[section[jpstr][0]] = -1
             elif jpstr not in strings:
                 strings[jpstr] = 0
 
@@ -40,9 +40,12 @@ def run(data):
             # Write all strings
             f.seek(constants.mainptr["offset"])
             for string in strings:
+                writestr = string
+                if strings[string] == -1:
+                    writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
                 strings[string] = f.tell()
-                common.logDebug("Writing string", string, "at", common.toHex(f.tell()))
-                game.writeString(f, string, table)
+                common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
+                game.writeString(f, writestr, table)
                 f.writeByte(0)
             common.logDebug("Finished at", common.toHex(f.tell()))
             # Change pointers

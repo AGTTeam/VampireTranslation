@@ -4,7 +4,7 @@
 
 ; VWF
 .org 0x21c23c8
-.area 0x1b3  ; up to 0x021c257b
+.area 0x2b7,0  ; up to 0x021c2680
   FONT_DATA:
   .import "VampireData/font_data.bin"
   .align
@@ -50,6 +50,11 @@
   sub r1,r6,r8
   b VWF_RETURN
   .pool
+
+  .align
+  REPLACE_PTR:
+  .area 0x100,0
+  .endarea
 .endarea
 
 ; Jump to custom code from the text rendering function
@@ -57,6 +62,20 @@
   ; sub r1,r6,r8
   b VWF_FUNC
   VWF_RETURN:
+
+; Remove line length limit
+.org 0x0203ccc8
+  mov r7,0xff
+
+.org 0x0202e544
+  ; .dw 0x022E8876
+  .dw REPLACE_PTR
+.org 0x02034130
+  ; .dw 0x022E8876
+  .dw REPLACE_PTR
+.org 0x02039b14
+  ; .dw 0x022E8876
+  .dw REPLACE_PTR
 
 ; Redirect some error codes
 ERROR_PTR equ 0x021c2394
@@ -79,6 +98,18 @@ ERROR_PTR equ 0x021c2394
 .org 0x02056610
   .dw ERROR_PTR
 .org 0x02056618
+  .dw ERROR_PTR
+.org 0x0205668c
+  .dw ERROR_PTR
+.org 0x020566d4
+  .dw ERROR_PTR
+.org 0x02056908
+  .dw ERROR_PTR
+.org 0x0205698c
+  .dw ERROR_PTR
+.org 0x02056b40
+  .dw ERROR_PTR
+.org 0x02056b44
   .dw ERROR_PTR
 
 .close

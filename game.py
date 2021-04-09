@@ -78,9 +78,6 @@ def writeString(f, s, table):
             if c not in table:
                 common.logError("Character", c, "not found for string", s)
             else:
-                if totchars > constants.maxchars:
-                    common.logWarning("String", s, "is too long, skipping character", c)
-                    continue
                 charcode = table[c]
                 chargroup = charcode >> 8
                 if group != chargroup:
@@ -89,6 +86,12 @@ def writeString(f, s, table):
                 f.writeByte(charcode & 0xff)
                 totchars += 1
     f.writeByte(0x0)
+
+
+def detectTextCode(s, i=0):
+    if s[i] == "<":
+        return len(s[i:].split(">", 1)[0]) + 1
+    return 0
 
 
 def getBINPointerGroups(f):
@@ -197,5 +200,5 @@ def getGlyphs(data):
         for c in fontconfig:
             charlen = 0 if fontconfig[c][0] == "" else int(fontconfig[c][0])
             c = c.replace("<3D>", "=")
-            glyphs[c] = common.FontGlyph(0, charlen, charlen + 1)
+            glyphs[c] = common.FontGlyph(0, charlen, charlen)
     return glyphs
