@@ -140,7 +140,7 @@ def getBMPOffsets(f, folder):
         ptrs[file] = []
         if type(ptr) is list:
             for offset in ptr:
-                ptrs[file].append({"pos": 0, "offset": offset})
+                ptrs[file].append({"pos": 0, "size": 0, "offset": offset})
             continue
         f.seek(ptr)
         lastoff = -1
@@ -148,29 +148,14 @@ def getBMPOffsets(f, folder):
         while True:
             offpos = f.tell()
             off = f.readUInt()
-            f.seek(4, 1)
+            size = f.readUInt()
             if off < lastoff or off > filesize:
                 break
             if off < lastoff:
                 continue
             lastoff = off
-            ptrs[file].append({"pos": offpos, "offset": off})
+            ptrs[file].append({"pos": offpos, "size": size, "offset": off})
     return ptrs
-
-
-def readANCL(f):
-    palette = []
-    f.seek(4)
-    colornum = f.readUShort()
-    bpp = f.readUShort()
-    for j in range(colornum):
-        palette.append(common.readPalette(f.readUShort()))
-    return palette, bpp
-
-
-def readANCG(f):
-    f.seek(4)
-    # TODO
 
 
 def getTable(data):

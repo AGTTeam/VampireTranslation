@@ -48,6 +48,7 @@ def run(data):
                 game.writeString(f, writestr, table)
                 f.writeByte(0)
             common.logDebug("Finished at", common.toHex(f.tell()))
+            common.logMessage("Room for", common.toHex(constants.mainptr["end"] - f.tell()), "more bytes")
             # Change pointers
             for ptrgroup in ptrgroups:
                 for ptr in ptrgroups[ptrgroup]:

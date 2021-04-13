@@ -1,6 +1,6 @@
-import math
 import os
 from hacktools import common, nitro
+import images
 
 
 def run(data):
@@ -12,6 +12,7 @@ def run(data):
     files = common.getFiles(infolder, ".IMG")
     lastpals = []
     lastmaps = []
+    totfiles = 0
     for file in common.showProgress(files):
         with common.Stream(infolder + file, "rb") as f:
             common.logDebug("Extracting", file)
@@ -20,33 +21,8 @@ def run(data):
             tileoff = f.readUInt() * 4
             mapoff = f.readUInt() * 4
             common.logDebug("Sections:", common.toHex(paloff), common.toHex(tileoff), common.toHex(mapoff))
-            # Read palette offsets
-            paloffs = []
-            if paloff > 0:
-                f.seek(paloff)
-                paln = f.readUInt()
-                for i in range(paln):
-                    paloffs.append(paloff + f.readUInt() * 4)
-                paloffs.insert(0, f.tell())
-            common.logDebug("Palettes:", paloffs)
-            # Read tile offsets
-            tileoffs = []
-            if tileoff > 0:
-                f.seek(tileoff)
-                tilen = f.readUInt()
-                for i in range(tilen):
-                    tileoffs.append(tileoff + f.readUInt() * 4)
-                tileoffs.insert(0, f.tell())
-            common.logDebug("Tiles:", tileoffs)
-            # Read palette offsets
-            mapoffs = []
-            if mapoff > 0:
-                f.seek(mapoff)
-                mapn = f.readUInt()
-                for i in range(mapn):
-                    mapoffs.append(mapoff + f.readUInt() * 4)
-                mapoffs.insert(0, f.tell())
-            common.logDebug("Maps:", mapoffs)
+            # Read offsets
+            paloffs, tileoffs, mapoffs = images.readIMGData(f, paloff, tileoff, mapoff)
             # Check
             if len(tileoffs) == 0:
                 common.logError("No tiles")
@@ -58,7 +34,7 @@ def run(data):
                 common.logError("tile>2", len(tileoffs), len(mapoffs))
                 break
             # Read image
-            palettes, tiles, maps = readIMG(f, paloffs, tileoffs, mapoffs)
+            palettes, tiles, maps = images.readIMG(f, paloffs, tileoffs, mapoffs)
             if len(paloffs) == 0:
                 common.logDebug("No palettes")
                 palettes = lastpals
@@ -84,79 +60,46 @@ def run(data):
                         common.logWarning("Unknown tilelen with 0 maps", tilelen, width, height)
                     outfile = outfolder + file.replace(".IMG", "_" + str(i).zfill(2) + ".png")
                     nitro.drawNCGR(outfile, None, tiles[i], palettes, width, height)
+                    totfiles += 1
             else:
                 for i in range(len(mapoffs) - 1):
                     common.logDebug("width", maps[i].width, "height", maps[i].height)
                     outfile = outfolder + file.replace(".IMG", "_" + str(i).zfill(2) + ".png")
                     nitro.drawNCGR(outfile, maps[i], tiles[0], palettes, maps[i].width, maps[i].height)
-    common.logMessage("Done! Extracted", len(files), "files")
+                    totfiles += 1
+    files = common.getFiles(infolder, ".ANCG")
+    for file in common.showProgress(files):
+        if file == "MANGA_LINE/000.ANCG":
+            continue
+        with common.Stream(infolder + file, "rb") as f:
+            basepath = file.split("/")[0] + "/"
+            filenum = int(file.replace(".ANCG", "").replace(basepath, ""))
+            # Search for the palette
+            foundpal = ""
+            nextfile = filenum + 1
+            if file == "MG6/000.ANCG":
+                nextfile += 1
+            nextname = basepath + str(nextfile).zfill(3) + ".ANCL"
+            if os.path.isfile(infolder + nextname):
+                foundpal = nextname
+            else:
+                for i in range(filenum - 1, -1, -1):
+                    palname = basepath + str(i).zfill(3) + ".ANCL"
+                    if os.path.isfile(infolder + palname):
+                        foundpal = palname
+                        break
+            if foundpal == "":
+                common.logError("Palette not found for file", file)
+                continue
 
+            with common.Stream(infolder + foundpal, "rb") as fpal:
+                palettes, bpp = images.readANCL(fpal)
 
-def readIMG(f, paloffs, tileoffs, mapoffs):
-    palettes = readIMGPalettes(f, paloffs) if len(paloffs) > 0 else []
-    bpp = 4 if 0 in palettes and len(palettes[0]) <= 16 else 8
-    tiles = readIMGTiles(f, tileoffs, bpp)
-    maps = readIMGMaps(f, mapoffs) if len(mapoffs) > 0 else []
-    return palettes, tiles, maps
+            size = os.path.getsize(infolder + file)
+            tiles = images.readANCG(f, size, bpp)
 
-
-def readIMGPalettes(f, offsets):
-    palettes = []
-    for i in range(len(offsets) - 1):
-        f.seek(offsets[i])
-        pallen = offsets[i+1] - f.tell()
-        palette = []
-        for j in range(pallen // 2):
-            palette.append(common.readPalette(f.readUShort()))
-        palettes.append(palette)
-    indexedpalettes = {}
-    for i in range(len(palettes)):
-        indexedpalettes[i] = palettes[i]
-    return indexedpalettes
-
-
-def readIMGTiles(f, offsets, bpp=8):
-    tiles = []
-    for i in range(len(offsets) - 1):
-        f.seek(offsets[i])
-        ncgr = nitro.NCGR()
-        ncgr.tiles = []
-        ncgr.bpp = bpp
-        ncgr.tilesize = 8
-        tilelen = offsets[i+1] - f.tell()
-        tiledata = f.read(tilelen)
-        for i in range(tilelen // (8 * ncgr.bpp)):
-            singletile = []
-            for j in range(ncgr.tilesize * ncgr.tilesize):
-                x = i * (ncgr.tilesize * ncgr.tilesize) + j
-                if ncgr.bpp == 4:
-                    index = (tiledata[x // 2] >> ((x % 2) << 2)) & 0x0f
-                else:
-                    index = tiledata[x]
-                singletile.append(index)
-            ncgr.tiles.append(singletile)
-        numpix = tilelen * 8 / ncgr.bpp
-        root = int(math.sqrt(numpix))
-        if math.pow(root, 2) == numpix:
-            ncgr.width = ncgr.height = root
-            common.logDebug("Assuming square size", ncgr.width)
-        else:
-            ncgr.width = int(numpix) if numpix < 0x100 else 0x0100
-            ncgr.height = int(numpix // ncgr.width)
-        tiles.append(ncgr)
-    return tiles
-
-
-def readIMGMaps(f, offsets):
-    maps = []
-    for i in range(len(offsets) - 1):
-        f.seek(offsets[i])
-        nscr = nitro.NSCR()
-        nscr.maps = []
-        nscr.width = f.readUShort() * 8
-        nscr.height = f.readUShort() * 8
-        for j in range((nscr.width // 8) * (nscr.height // 8)):
-            map = nitro.readMapData(f.readUShort())
-            nscr.maps.append(map)
-        maps.append(nscr)
-    return maps
+            common.makeFolders(outfolder + os.path.dirname(file))
+            outfile = outfolder + file.replace(".ANCG", ".png")
+            nitro.drawNCGR(outfile, None, tiles, palettes, tiles.width, tiles.height)
+            totfiles += 1
+    common.logMessage("Done! Extracted", totfiles, "files")

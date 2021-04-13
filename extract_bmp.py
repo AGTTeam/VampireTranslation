@@ -27,6 +27,8 @@ def run(data):
             except Exception:
                 common.logError("OSError")
     common.copyFolder(outfolder, workfolder)
+    if os.path.isfile(data + "bmppcache.txt"):
+        os.remove(data + "bmppcache.txt")
     common.logMessage("Done! Extracted", len(files), "files")
 
 

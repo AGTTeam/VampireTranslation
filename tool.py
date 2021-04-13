@@ -3,7 +3,7 @@ import click
 from hacktools import common, nds
 import game
 
-version = "0.5.1"
+version = "0.6.0"
 data = "VampireData/"
 romfile = data + "vampire.nds"
 rompatch = data + "vampire_patched.nds"
@@ -54,7 +54,8 @@ def repack(no_rom, bin, fdt, img, bmp):
         import repack_fdt
         repack_fdt.run(data)
     if all or img:
-        pass
+        import repack_img
+        repack_img.run(data)
     if all or bmp:
         import repack_bmp
         repack_bmp.run(data)
