@@ -26,6 +26,8 @@ def run(data, analyze=False, writepos=False):
             for ptrgroup in common.showProgress(ptrgroups):
                 firstwrite = True
                 for ptr in ptrgroups[ptrgroup]:
+                    if type(ptr) is list:
+                        continue
                     f.seek(ptr["ptr"])
                     strstart = f.tell()
                     common.logDebug(common.toHex(strstart))
@@ -48,35 +50,42 @@ def run(data, analyze=False, writepos=False):
         common.logMessage("Extracting DAT to", datfile, "...")
         with codecs.open(datfile, "w", "utf8") as dat:
             for file in common.showProgress(constants.datptrs):
-                datptr = constants.datptrs[file]
-                if "main" in datptr:
+                maindatptr = constants.datptrs[file]
+                if type(maindatptr) is not list and "main" in maindatptr:
                     continue
                 dat.write("\n!FILE:" + file + "\n")
-                f.seek(datptr["offset"])
-                if "end" in datptr:
-                    while f.tell() < datptr["end"]:
-                        strstart = f.tell()
-                        jpstr = game.readString(f, invtable)
-                        strend = f.tell()
-                        dat.write(jpstr + "=\n")
-                        f.readZeros(binsize)
-                        if analyze:
-                            analyzeSpace(strstart, strend, seenptr, allmain)
+                datoffsets = []
+                if type(maindatptr) is list:
+                    for subdatptr in maindatptr:
+                        datoffsets.append(subdatptr)
                 else:
-                    ptrs = []
-                    for i in range(datptr["count"]):
-                        ptrs.append(f.readUInt() - 0x02000000)
-                    for i in range(datptr["count"]):
-                        f.seek(ptrs[i])
-                        strstart = f.tell()
-                        jpstr = game.readString(f, invtable)
-                        if strstart >= constants.mainptr["offset"] and strstart <= constants.mainptr["end"]:
-                            common.logMessage(file, common.toHex(strstart), jpstr)
-                        strend = f.tell()
-                        dat.write(jpstr + "=\n")
-                        f.readZeros(binsize)
-                        if analyze:
-                            analyzeSpace(strstart, strend, seenptr, allmain)
+                    datoffsets.append(maindatptr)
+                for datptr in datoffsets:
+                    f.seek(datptr["offset"])
+                    if "end" in datptr:
+                        while f.tell() < datptr["end"]:
+                            strstart = f.tell()
+                            jpstr = game.readString(f, invtable)
+                            strend = f.tell()
+                            dat.write(jpstr + "=\n")
+                            f.readZeros(binsize)
+                            if analyze:
+                                analyzeSpace(strstart, strend, seenptr, allmain)
+                    else:
+                        ptrs = []
+                        for i in range(datptr["count"]):
+                            ptrs.append(f.readUInt() - 0x02000000)
+                        for i in range(datptr["count"]):
+                            f.seek(ptrs[i])
+                            strstart = f.tell()
+                            jpstr = game.readString(f, invtable)
+                            if strstart >= constants.mainptr["offset"] and strstart <= constants.mainptr["end"]:
+                                common.logMessage(file, common.toHex(strstart), jpstr)
+                            strend = f.tell()
+                            dat.write(jpstr + "=\n")
+                            f.readZeros(binsize)
+                            if analyze:
+                                analyzeSpace(strstart, strend, seenptr, allmain)
         common.logMessage("Done!")
         if analyze:
             for i in allmain:

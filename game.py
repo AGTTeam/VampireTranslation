@@ -102,12 +102,16 @@ def getBINPointerGroups(f):
     allptrs.append(constants.mainptr["end"])
     ptrgroups = OrderedDict()
     for datptr in constants.datptrs:
-        offset = constants.datptrs[datptr]["offset"]
-        datoffsets.append(offset)
-        if "main" in constants.datptrs[datptr]:
-            ptrgroups[offset] = []
-        if "dataonly" in constants.datptrs[datptr]:
-            datagroups.append(offset)
+        if type(constants.datptrs[datptr]) is list:
+            for subdatptr in constants.datptrs[datptr]:
+                datoffsets.append(subdatptr["offset"])
+        else:
+            offset = constants.datptrs[datptr]["offset"]
+            datoffsets.append(offset)
+            if "main" in constants.datptrs[datptr]:
+                ptrgroups[offset] = []
+            if "dataonly" in constants.datptrs[datptr]:
+                datagroups.append(offset)
     f.seek(0xb12a8)
     while f.tell() < 0xb2810:
         ptrgroups[f.readUInt() - 0x02000000] = []
