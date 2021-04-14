@@ -59,9 +59,9 @@ def formatString(str):
     return str
 
 
-def writeString(f, s, table):
+def writeString(f, s, table, maxlen=-1):
     group = 0
-    totchars = 0
+    totlen = 0
     for stringcode in constants.stringcodes:
         s = s.replace(constants.stringcodes[stringcode], stringcode)
     x = 0
@@ -69,11 +69,19 @@ def writeString(f, s, table):
         c = s[x]
         x += 1
         if c == "|":
+            if maxlen != -1 and totlen + 1 >= maxlen:
+                common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                break
             f.writeByte(0xa)
+            totlen += 1
         elif c == "<":
+            if maxlen != -1 and totlen + 1 >= maxlen:
+                common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                break
             code = s[x] + s[x+1]
             f.write(bytes.fromhex(code))
             x += 3
+            totlen += 1
         else:
             if c not in table:
                 common.logError("Character", c, "not found for string", s)
@@ -81,10 +89,17 @@ def writeString(f, s, table):
                 charcode = table[c]
                 chargroup = charcode >> 8
                 if group != chargroup:
+                    if maxlen != -1 and totlen + 2 >= maxlen:
+                        common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        break
                     group = chargroup
                     f.writeByte(group)
-                f.writeByte(charcode & 0xff)
-                totchars += 1
+                    f.writeByte(charcode & 0xff)
+                else:
+                    if maxlen != -1 and totlen + 1 >= maxlen:
+                        common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        break
+                    f.writeByte(charcode & 0xff)
     f.writeByte(0x0)
 
 
