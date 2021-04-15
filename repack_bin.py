@@ -99,7 +99,7 @@ def run(data):
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
-                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr})
+                                allstrings.append({"start": strstart, "end": fin.tell(), "str": jpstr})
                         else:
                             ptrs = []
                             for i in range(datptr["count"]):
@@ -110,7 +110,7 @@ def run(data):
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
-                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr, "ptrpos": ptrs[i]["pos"]})
+                                allstrings.append({"start": strstart, "end": fin.tell(), "str": jpstr, "ptrpos": ptrs[i]["pos"]})
                     # Check how much space is used by these strings and update them with the translations
                     minpos = 0xffffffff
                     maxpos = 0

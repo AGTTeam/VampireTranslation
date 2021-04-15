@@ -95,11 +95,13 @@ def writeString(f, s, table, maxlen=-1):
                     group = chargroup
                     f.writeByte(group)
                     f.writeByte(charcode & 0xff)
+                    totlen += 2
                 else:
                     if maxlen != -1 and totlen + 1 >= maxlen:
                         common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                         break
                     f.writeByte(charcode & 0xff)
+                    totlen += 1
     f.writeByte(0x0)
 
 
