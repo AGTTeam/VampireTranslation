@@ -12,7 +12,14 @@ wordwrap = 160
 # If "dataonly" is set to true, they will be just exported as data without string parsing
 # If it's a section with fixed-size strings with no pointers, an "end" offset can be set instead of "count"
 datptrs = {
-    "Letters":        {"offset": 0x0a3c30, "count": 22},
+    "Letters": [
+                      {"offset": 0x0a3c30, "count": 24},
+                      {"offset": 0x0ac238, "count": 2},
+                      {"offset": 0x0ac2b4, "count": 1},
+                      {"offset": 0x0b07c4, "count": 9},
+                      {"offset": 0x0b07f0, "count": 1},
+                      {"offset": 0x0b0bd8, "count": 1},
+    ],
     "Unk1":           {"offset": 0x0ab3e4, "count": 3,   "main": True},
     "Unk2":           {"offset": 0x0ab4a8, "count": 3,   "main": True},
     "Unk3":           {"offset": 0x0ab56c, "count": 3,   "main": True},
@@ -21,6 +28,8 @@ datptrs = {
     "Unk6":           {"offset": 0x0ab7b8, "count": 3,   "main": True},
     "Unk7":           {"offset": 0x0aba04, "count": 3,   "main": True},
     "Names":          {"offset": 0x0ac210, "count": 54,  "main": True},
+    "Names2":         {"offset": 0x0ac240, "count": 28,  "main": True},
+    "Names3":         {"offset": 0x0ac2b8, "count": 13,  "main": True},
     "Unk8":           {"offset": 0x0adadc, "count": 3,   "main": True},
     "Unk9":           {"offset": 0x0adaf8, "count": 3,   "main": True},
     "Unk10":          {"offset": 0x0adb14, "count": 3,   "main": True},
@@ -44,10 +53,19 @@ datptrs = {
     "Mini11":         {"offset": 0x0add0c, "count": 1,   "main": True},
     "AHX":            {"offset": 0x0aecd0, "count": 90,  "main": True, "dataonly": True},
     "Choices":        {"offset": 0x0b0360, "count": 275, "main": True},
-    "Scripts":        {"offset": 0x0b07ac, "count": 703, "main": True, "dataonly": True},
+    "Scripts1":       {"offset": 0x0b07ac, "count": 6,   "main": True, "dataonly": True},
+    "Scripts2":       {"offset": 0x0b07e8, "count": 2,   "main": True, "dataonly": True},
+    "Scripts3":       {"offset": 0x0b07f4, "count": 249, "main": True, "dataonly": True},
+    "Scripts4":       {"offset": 0x0b0bdc, "count": 435, "main": True, "dataonly": True},
     "DataErrors":     {"offset": 0x1ae4ac, "count": 6},
-    "Time":           {"offset": 0x1ae964, "count": 10 * 3},
-    "NameEntry":      {"offset": 0x1b8c54, "count": 2},  # 0x1b8b80 / 55
+    "Time": [
+                      {"offset": 0x1ae934, "count": 4},
+                      {"offset": 0x1ae964, "count": 31},
+    ],
+    "NameEntry": [
+                      {"offset": 0x1b8b80, "count": 40},
+                      {"offset": 0x1b8c24, "count": 14},
+    ],
     "SaveLoad":       {"offset": 0x1b9fec, "count": 6},
     "Options":        {"offset": 0x1babac, "count": 4},
     "VoiceData":      {"offset": 0x1c05a0, "count": 0},

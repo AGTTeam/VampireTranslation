@@ -69,13 +69,13 @@ def writeString(f, s, table, maxlen=-1):
         c = s[x]
         x += 1
         if c == "|":
-            if maxlen != -1 and totlen + 1 >= maxlen:
+            if maxlen != -1 and totlen + 1 > maxlen:
                 common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                 break
             f.writeByte(0xa)
             totlen += 1
         elif c == "<":
-            if maxlen != -1 and totlen + 1 >= maxlen:
+            if maxlen != -1 and totlen + 1 > maxlen:
                 common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                 break
             code = s[x] + s[x+1]
@@ -86,10 +86,17 @@ def writeString(f, s, table, maxlen=-1):
             if c not in table:
                 common.logError("Character", c, "not found for string", s)
             else:
-                charcode = table[c]
+                charcode = table[c][0]
+                if len(table[c]) > 1:
+                    # Pick the best one
+                    for ci in range(1, len(table[c])):
+                        checkgroup = table[c][ci] >> 8
+                        if checkgroup == group:
+                            charcode = table[c][ci]
+                            break
                 chargroup = charcode >> 8
                 if group != chargroup:
-                    if maxlen != -1 and totlen + 2 >= maxlen:
+                    if maxlen != -1 and totlen + 2 > maxlen:
                         common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                         break
                     group = chargroup
@@ -97,7 +104,7 @@ def writeString(f, s, table, maxlen=-1):
                     f.writeByte(charcode & 0xff)
                     totlen += 2
                 else:
-                    if maxlen != -1 and totlen + 1 >= maxlen:
+                    if maxlen != -1 and totlen + 1 > maxlen:
                         common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                         break
                     f.writeByte(charcode & 0xff)
@@ -191,7 +198,9 @@ def getTable(data):
         glyph = section[code][0]
         glyph = glyph.replace("<3D>", "=")
         codehex = int(code, 16)
-        table[glyph] = codehex
+        if glyph not in table:
+            table[glyph] = []
+        table[glyph].append(codehex)
         invtable[codehex] = glyph
     return table, invtable
 

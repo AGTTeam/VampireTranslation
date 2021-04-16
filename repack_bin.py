@@ -5,7 +5,7 @@ import constants
 import game
 
 
-def run(data):
+def run(data, analyze=False):
     infile = data + "extract/arm9.bin"
     outfile = data + "repack/arm9.bin"
     fontdata = data + "font_data.bin"
@@ -99,7 +99,7 @@ def run(data):
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
-                                allstrings.append({"start": strstart, "end": fin.tell(), "str": jpstr})
+                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr})
                         else:
                             ptrs = []
                             for i in range(datptr["count"]):
@@ -110,7 +110,7 @@ def run(data):
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
-                                allstrings.append({"start": strstart, "end": fin.tell(), "str": jpstr, "ptrpos": ptrs[i]["pos"]})
+                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr, "ptrpos": ptrs[i]["pos"]})
                     # Check how much space is used by these strings and update them with the translations
                     minpos = 0xffffffff
                     maxpos = 0
@@ -124,10 +124,19 @@ def run(data):
                             jpstr["str"] = section[check].pop()
                             if len(section[check]) == 0:
                                 del section[check]
+                    if analyze:
+                        allspace = []
+                        for i in range(minpos, maxpos + 1):
+                            allspace.append(i)
+                        for jpstr in allstrings:
+                            for i in range(jpstr["start"], jpstr["end"] + 1):
+                                allspace.remove(i)
+                        common.logMessage(datname)
+                        common.logMessage(allspace)
                     # Start writing them
                     f.seek(minpos)
                     for jpstr in allstrings:
-                        if "ptrpos" in jpstr:
+                        if "ptrpos" in jpstr and datname != "ItemShop":
                             # Write the string and update the pointer
                             strpos = f.tell()
                             game.writeString(f, jpstr["str"], table, maxpos - f.tell())
