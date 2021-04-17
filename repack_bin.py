@@ -37,7 +37,7 @@ def run(data, analyze=False):
             elif jpstr not in strings:
                 strings[jpstr] = 0
 
-    common.copyFile(infile, outfile)
+    # common.copyFile(infile, outfile)
     with common.Stream(infile, "rb") as fin:
         ptrgroups, allptrs = game.getBINPointerGroups(fin)
         with common.Stream(outfile, "rb+") as f:
@@ -47,8 +47,8 @@ def run(data, analyze=False):
                 writestr = string
                 if strings[string] == -1:
                     writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
-                strings[string] = f.tell()
                 common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
+                strings[string] = f.tell()
                 game.writeString(f, writestr, table)
                 f.writeByte(0)
             common.logDebug("Finished at", common.toHex(f.tell()))

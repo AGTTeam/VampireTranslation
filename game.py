@@ -24,12 +24,11 @@ def readString(f, invtable, ptrs=None):
                 while True:
                     if f.tell() in ptrs:
                         return formatString(ret)
-                    byte = f.readByte()
-                    if byte < 0xa:
-                        ret += "<" + common.toHex(byte) + ">"
-                    else:
-                        f.seek(-1, 1)
+                    lastchars = ret[-12:]
+                    if lastchars == "<01><03><01>" or lastchars == "<01><03><02>" or lastchars == "<01><03><03>":
                         break
+                    byte = f.readByte()
+                    ret += "<" + common.toHex(byte) + ">"
         else:
             charcode = (group * 0x100) + byte
             if charcode not in invtable:
@@ -109,7 +108,7 @@ def writeString(f, s, table, maxlen=-1):
                         break
                     f.writeByte(charcode & 0xff)
                     totlen += 1
-    f.writeByte(0x0)
+    f.writeByte(0)
 
 
 def detectTextCode(s, i=0):
