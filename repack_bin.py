@@ -30,7 +30,7 @@ def run(data, analyze=False):
         section = common.getSection(bin, "")
         chartot, transtot = common.getSectionPercentage(section)
         for jpstr in section:
-            if jpstr in section and section[jpstr][0] != "":
+            if section[jpstr][0] != "":
                 translations[jpstr] = section[jpstr][0]
                 if section[jpstr][0] not in strings:
                     strings[section[jpstr][0]] = -1
@@ -46,11 +46,13 @@ def run(data, analyze=False):
             for string in strings:
                 writestr = string
                 if strings[string] == -1:
+                    writestr = writestr.replace("<0A>", "|")
                     writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
                 common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
                 strings[string] = f.tell()
                 game.writeString(f, writestr, table)
-                f.writeByte(0)
+                if "<ch1>" in writestr:
+                    f.writeByte(0)
             common.logDebug("Finished at", common.toHex(f.tell()))
             common.logMessage("Room for", common.toHex(constants.mainptr["end"] - f.tell()), "more bytes")
             # Change pointers

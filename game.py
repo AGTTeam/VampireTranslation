@@ -24,8 +24,12 @@ def readString(f, invtable, ptrs=None):
                 while True:
                     if f.tell() in ptrs:
                         return formatString(ret)
-                    lastchars = ret[-12:]
-                    if lastchars == "<01><03><01>" or lastchars == "<01><03><02>" or lastchars == "<01><03><03>":
+                    foundcode = False
+                    for stringcode in constants.stringcodes:
+                        if ret[-len(stringcode):] == stringcode:
+                            foundcode = True
+                            break
+                    if foundcode:
                         break
                     byte = f.readByte()
                     ret += "<" + common.toHex(byte) + ">"
