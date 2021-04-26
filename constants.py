@@ -176,6 +176,201 @@ stringcodes = {
     "<01><09><00><00><00>": "<unk1>",
 }
 
+popupcells = [
+    {"width": 64, "height": 64},
+    {"width": 16, "height": 64, "x": 64},
+    {"width": 64, "height": 64, "y": 64},
+    {"width": 16, "height": 64, "x": 64, "y": 64},
+    {"width": 32, "height": 16, "y": 128},
+    {"width": 32, "height": 16, "x": 32, "y": 128},
+    {"width": 16, "height": 16, "x": 64, "y": 128},
+]
+
+manualcells = {
+    "ADV/003.ANCG": [
+        {"cells": popupcells},
+        {"cells": [{"width": 32, "height": 64}], "repeat": 3},
+    ],
+    "BD_MATERIAL/000.ANCG": [
+        {"cells": [{"width": 16, "height": 64}], "repeat": 3},
+        {"cells": [{"width": 16, "height": 16}], "repeat": 30},
+    ],
+    "CHAPT/002.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 16, "height": 64, "x": 32, "y": 64},
+                  ], "repeat": 4},
+    ],
+    "CHAPT/004.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 32, "y": 64},
+                    {"width": 16, "height": 32, "x": 32, "y": 64},
+                    {"width": 32, "height": 32, "y": 96},
+                  ], "repeat": 4},
+    ],
+    "CHAPT/006.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 16, "height": 64, "x": 32, "y": 64},
+                    {"width": 32, "height": 64, "y": 128},
+                    {"width": 16, "height": 64, "y": 128, "x": 32},
+                  ], "repeat": 4},
+    ],
+    "CHAPT/008.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 16, "height": 64, "x": 32, "y": 64},
+                    {"width": 16, "height": 32, "y": 128},
+                    {"width": 16, "height": 16, "x": 32, "y": 128},
+                  ], "repeat": 4},
+    ],
+    "CHAPT/010.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 32, "y": 64},
+                    {"width": 16, "height": 32, "x": 32, "y": 64},
+                    {"width": 32, "height": 16, "y": 96},
+                    {"width": 16, "height": 16, "x": 32, "y": 96},
+                  ], "repeat": 4},
+    ],
+    "CHAPT/012.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 16, "height": 64, "x": 32, "y": 64},
+                  ], "repeat": 4},
+    ],
+    "CHAPT/014.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 32, "y": 64},
+                    {"width": 16, "height": 32, "x": 32, "y": 64},
+                    {"width": 32, "height": 16, "y": 96},
+                    {"width": 16, "height": 16, "x": 32, "y": 96},
+                  ], "repeat": 4},
+    ],
+    "CHAR/007.ANCG": [
+        {"cells": [{"width": 32, "height": 64}], "repeat": 10},
+        {"cells": [{"width": 16, "height": 48}], "repeat": 6, "pal": 6},
+    ],
+    "COMMON/004.ANCG": [
+        {"cells": popupcells},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 16, "height": 64, "x": 32, "y": 64},
+                    {"width": 32, "height": 16, "y": 128},
+                    {"width": 16, "height": 16, "x": 32, "y": 128},
+                  ], "repeat": 2},
+        {"cells": [{"width": 32, "height": 64}], "repeat": 3},
+    ],
+    "COMMON/005.ANCG": [
+        {"cells": popupcells},
+    ],
+    "COMMON/006.ANCG": [
+        {"cells": popupcells, "repeat": 2},
+    ],
+    "COMMON/007.ANCG": [
+        {"cells": popupcells},
+    ],
+    "COMMON/008.ANCG": [
+        {"cells": popupcells},
+        {"cells": [{"width": 32, "height": 64}], "repeat": 3},
+    ],
+    "DATESL/006.ANCG": [
+        {"cells": popupcells},
+        {"cells": [{"width": 32, "height": 64}], "repeat": 3},
+    ],
+    "ENTRY/002.ANCG": [
+        {"cells": [{"width": 64, "height": 64}, {"width": 64, "height": 64, "y": 64}], "repeat": 2},
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}]},
+    ],
+    "ENTRY/004.ANCG": [
+        {"cells": [{"width": 32, "height": 16}], "repeat": 37},
+    ],
+    "GALLERY/008.ANCG": [
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}, {"width": 16, "height": 16, "y": 128}], "repeat": 11},
+    ],
+    "GALLERY/010.ANCG": [
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}, {"width": 16, "height": 16, "y": 128}], "repeat": 11},
+    ],
+    "GALLERY/012.ANCG": [
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}, {"width": 16, "height": 16, "y": 128}], "repeat": 11},
+    ],
+    "GALLERY/014.ANCG": [
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}, {"width": 16, "height": 16, "y": 128}], "repeat": 11},
+    ],
+    "GALLERY/016.ANCG": [
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}, {"width": 16, "height": 16, "y": 128}], "repeat": 11},
+    ],
+    "GALLERY/018.ANCG": [
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}, {"width": 16, "height": 16, "y": 128}], "repeat": 11},
+    ],
+    "GALLERY/020.ANCG": [
+        {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}, {"width": 16, "height": 16, "y": 128}], "repeat": 4},
+    ],
+    "GL_TITLE": [
+        {"cells": [{"width": 32, "height": 64}, {"width": 32, "height": 64, "y": 64}, {"width": 32, "height": 32, "y": 128}]},
+    ],
+    "MAIN/006.ANCG": [
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 64, "x": 32},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 16, "height": 64, "x": 32, "y": 64},
+                    {"width": 32, "height": 64, "y": 128},
+                    {"width": 16, "height": 64, "x": 32, "y": 128},
+                  ]},
+        {"cells": [
+                    {"width": 64, "height": 64},
+                    {"width": 16, "height": 64, "x": 64},
+                    {"width": 32, "height": 16,  "y": 64},
+                    {"width": 32, "height": 16,  "x": 32, "y": 64},
+                  ]},
+        {"cells": [{"width": 32, "height": 32}], "repeat": 7},
+    ],
+    # MG_SEL/002.ANCG ?
+    # MG_SEL/004.ANCG ?
+    "MG1/012.ANCG": [
+        {"cells": popupcells},
+        {"cells": [{"width": 32, "height": 64}], "repeat": 3},
+    ],
+    # MG09/013.ANCG
+    "V_GALLERY/004.ANCG": [
+        {"cells": [{"width": 32, "height": 64}, {"width": 32, "height": 64, "y": 64}, {"width": 32, "height": 64, "y": 128}], "repeat": 8},
+    ],
+    "WC/000.ANCG": [
+        {"cells": [{"width": 64, "height": 64}], "repeat": 4, "pal": 5},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 16, "height": 32, "x": 32},
+                    {"width": 8,  "height": 32, "x": 48},
+                    {"width": 16, "height": 32, "x": 32, "y": 32},
+                    {"width": 8,  "height": 32, "x": 48, "y": 32},
+                  ], "pal": 5},
+        {"cells": [{"width": 16, "height": 32}], "repeat": 4, "pal": 5},
+    ],
+}
+
 bmpptr = {
     "ADV.R00": 0x1b1b0c,
     "BD_MATERIAL.R00": 0x1af9f4,
@@ -268,7 +463,7 @@ bmpptr = {
     "KANAME_S4_0.R00": 0x1afd2c,
     "KANAME_S4_1.R00": 0x1b0d24,
     "LOGO.R00": 0x1af9bc,
-    "MAIN.R00": 0x1b1a4,
+    "MAIN.R00": 0x1b1a44,
     "MANGA_LINE.R00": [0x0],
     "MG04.R00": [0x0, 0x19d0],
     "MG09.R00": 0x1cad48,

@@ -72,34 +72,14 @@ def run(data):
         if file == "MANGA_LINE/000.ANCG":
             continue
         with common.Stream(infolder + file, "rb") as f:
-            basepath = file.split("/")[0] + "/"
-            filenum = int(file.replace(".ANCG", "").replace(basepath, ""))
-            # Search for the palette
-            foundpal = ""
-            nextfile = filenum + 1
-            if file == "MG6/000.ANCG":
-                nextfile += 1
-            nextname = basepath + str(nextfile).zfill(3) + ".ANCL"
-            if os.path.isfile(infolder + nextname):
-                foundpal = nextname
-            else:
-                for i in range(filenum - 1, -1, -1):
-                    palname = basepath + str(i).zfill(3) + ".ANCL"
-                    if os.path.isfile(infolder + palname):
-                        foundpal = palname
-                        break
-            if foundpal == "":
-                common.logError("Palette not found for file", file)
-                continue
-
-            with common.Stream(infolder + foundpal, "rb") as fpal:
-                palettes, bpp = images.readANCL(fpal)
-
-            size = os.path.getsize(infolder + file)
-            tiles = images.readANCG(f, size, bpp)
+            common.logDebug("Extracting", file)
+            tiles, cells, palettes, bpp = images.readANCGGraphics(f, file, infolder)
 
             common.makeFolders(outfolder + os.path.dirname(file))
             outfile = outfolder + file.replace(".ANCG", ".png")
-            nitro.drawNCGR(outfile, None, tiles, palettes, tiles.width, tiles.height)
+            if cells is None:
+                nitro.drawNCGR(outfile, None, tiles, palettes, tiles.width, tiles.height)
+            else:
+                nitro.drawNCER(outfile, cells, tiles, palettes)
             totfiles += 1
     common.logMessage("Done! Extracted", totfiles, "files")

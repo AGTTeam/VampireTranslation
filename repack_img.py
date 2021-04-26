@@ -16,6 +16,8 @@ def run(data):
         dirname = os.path.dirname(file)
         if not os.path.isdir(workfolder + dirname):
             continue
+        if file == "DATESL/002.IMG":
+            continue
         with common.Stream(infolder + file, "rb") as fin:
             with common.Stream(outfolder + file, "wb") as f:
                 common.logDebug("Repacking", file)
@@ -95,4 +97,26 @@ def run(data):
                 f.seek(mapoff + 4)
                 for newmapoff in newmapoffs:
                     f.writeUInt((newmapoff - mapoff) // 4)
+
+    # Repack ANCG files
+    files = common.getFiles(infolder, ".ANCG")
+    open("tempcell.bin", "w").close()
+    for file in common.showProgress(files):
+        if file == "MANGA_LINE/000.ANCG":
+            continue
+        dirname = os.path.dirname(file)
+        if not os.path.isdir(workfolder + dirname):
+            continue
+        pngfile = workfolder + file.replace(".ANCG", ".png")
+        if not os.path.isfile(pngfile):
+            continue
+        common.copyFile(infolder + file, outfolder + file)
+        with common.Stream(infolder + file, "rb") as fin:
+            common.logDebug("Repacking", file)
+            tiles, cells, palettes, bpp = images.readANCGGraphics(fin, file, infolder)
+            if cells is None:
+                continue
+        nitro.writeNCER(outfolder + file, "tempcell.bin", tiles, cells, pngfile, palettes, checkRepeat=False, writelen=False)
+        totfiles += 1
+    os.remove("tempcell.bin")
     common.logMessage("Done! Repacked", totfiles, "files")

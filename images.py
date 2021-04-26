@@ -1,5 +1,7 @@
 import math
+import os
 from hacktools import common, nitro
+import constants
 
 
 def readIMGData(f, paloff, tileoff, mapoff):
@@ -109,7 +111,48 @@ def readIMGMaps(f, offsets):
     return maps
 
 
-def readANCL(f):
+def findPalette(file, infolder):
+    basepath = file.split("/")[0] + "/"
+    filenum = int(file.replace(".ANCG", "").replace(basepath, ""))
+    # Search for the palette
+    foundpal = ""
+    nextfile = filenum + 1
+    if file == "MG6/000.ANCG":
+        nextfile += 1
+    nextname = basepath + str(nextfile).zfill(3) + ".ANCL"
+    if os.path.isfile(infolder + nextname):
+        foundpal = nextname
+    else:
+        for i in range(filenum - 1, -1, -1):
+            palname = basepath + str(i).zfill(3) + ".ANCL"
+            if os.path.isfile(infolder + palname):
+                foundpal = palname
+                break
+    return foundpal
+
+
+def readANCGGraphics(f, file, infolder):
+    foundpal = findPalette(file, infolder)
+    if foundpal == "":
+        common.logError("Palette not found for file", file)
+        return None, None, None
+
+    with common.Stream(infolder + foundpal, "rb") as fpal:
+        palettes, bpp = readANCL(fpal, file)
+
+    size = os.path.getsize(infolder + file)
+    tiles = readANCG(f, size, bpp)
+    foldername = file.split("/")[0]
+    if file in constants.manualcells:
+        cells = readCells(constants.manualcells[file])
+    elif foldername in constants.manualcells:
+        cells = readCells(constants.manualcells[foldername])
+    else:
+        cells = None
+    return tiles, cells, palettes, bpp
+
+
+def readANCL(f, file):
     palette = []
     f.seek(4)
     colornum = f.readUShort()
@@ -118,6 +161,8 @@ def readANCL(f):
         palette.append(common.readPalette(f.readUShort()))
     indexedpalettes = {}
     indexedpalettes[0] = palette
+    if "SMALL_CG" in file:
+        bpp = 8
     return indexedpalettes, bpp
 
 
@@ -127,6 +172,7 @@ def readANCG(f, size, bpp):
     ncgr.tiles = []
     ncgr.bpp = bpp
     ncgr.tilesize = 8
+    ncgr.tileoffset = f.tell()
     tilelen = size - 8
     tiledata = f.read(tilelen)
     for i in range(tilelen // (8 * ncgr.bpp)):
@@ -148,4 +194,54 @@ def readANCG(f, size, bpp):
         ncgr.width = numpix if numpix < 0x100 else 0x0100
         ncgr.height = int(numpix // ncgr.width)
         common.logDebug("Assuming size", ncgr.width, ncgr.height)
+    common.logDebug("Finished reading file at", common.toHex(f.tell()))
     return ncgr
+
+
+def readCells(manualcells):
+    ncer = nitro.NCER()
+    ncer.banks = []
+    ncer.banknum = 0
+    ncer.tbank = ncer.bankoffset = ncer.blocksize = ncer.partitionoffset = 0
+    curroff = 0
+    for manualbank in manualcells:
+        repeat = int(manualbank["repeat"]) if "repeat" in manualbank else 1
+        for i in range(repeat):
+            bank = nitro.Bank()
+            bank.cells = []
+            ncer.banks.append(bank)
+            ncer.banknum += 1
+    i = 0
+    banki = 0
+    while i < ncer.banknum:
+        manualbank = manualcells[banki]
+        repeat = int(manualbank["repeat"]) if "repeat" in manualbank else 1
+        for r in range(repeat):
+            bank = ncer.banks[i]
+            bank.cellnum = len(manualbank["cells"])
+            bank.layernum = 1
+            bank.partitionoffset = bank.width = bank.height = 0
+            for j in range(len(manualbank["cells"])):
+                manualcell = manualbank["cells"][j]
+                cell = nitro.Cell()
+                cell.objoffset = cell.layer = cell.objmode = cell.priority = 0
+                cell.mosaic = cell.depth = cell.xflip = cell.yflip = cell.rsflag = False
+                cell.width = manualcell["width"]
+                cell.height = manualcell["height"]
+                cell.pal = manualbank["pal"] if "pal" in manualbank else 0
+                cell.x = manualcell["x"] if "x" in manualcell else 0
+                cell.y = manualcell["y"] if "y" in manualcell else 0
+                if cell.x + cell.width > bank.width:
+                    bank.width = cell.x + cell.width
+                if cell.y + cell.height > bank.height:
+                    bank.height = cell.y + cell.height
+                cell.numcell = j
+                cell.tileoffset = curroff
+                curroff += ((cell.width * cell.height) // (8 * 8))
+                bank.cells.append(cell)
+            common.logDebug(vars(bank))
+            for cell in bank.cells:
+                common.logDebug(vars(cell))
+            i += 1
+        banki += 1
+    return ncer
