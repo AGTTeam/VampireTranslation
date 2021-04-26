@@ -42,19 +42,33 @@ def run(data, analyze=False):
         ptrgroups, allptrs = game.getBINPointerGroups(fin)
         with common.Stream(outfile, "rb+") as f:
             # Write all strings
+            outofspace = False
+            outchars = 0
+            lastgood = 0
             f.seek(constants.mainptr["offset"])
             for string in strings:
                 writestr = string
                 if strings[string] == -1:
                     writestr = writestr.replace("<0A>", "|")
                     writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
-                common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
-                strings[string] = f.tell()
-                game.writeString(f, writestr, table)
-                if "<ch1>" in writestr:
-                    f.writeByte(0)
+                if outofspace:
+                    common.logDebug("Skipping string", writestr)
+                    outchars += len(writestr) - writestr.count("<") * 3
+                    strings[string] = lastgood
+                else:
+                    common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
+                    strings[string] = lastgood = f.tell()
+                    game.writeString(f, writestr, table)
+                    if "<ch1>" in writestr:
+                        f.writeByte(0)
+                    if f.tell() >= constants.mainptr["end"]:
+                        outofspace = True
+                        common.logMessage("Ran out of space while writing string", writestr)
             common.logDebug("Finished at", common.toHex(f.tell()))
-            common.logMessage("Room for", common.toHex(constants.mainptr["end"] - f.tell()), "more bytes")
+            if outofspace:
+                common.logMessage("Characters left out:", outchars)
+            else:
+                common.logMessage("Room for", common.toHex(constants.mainptr["end"] - f.tell()), "more bytes")
             # Change pointers
             for ptrgroup in ptrgroups:
                 for ptr in ptrgroups[ptrgroup]:
