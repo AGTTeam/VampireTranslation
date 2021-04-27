@@ -3,7 +3,7 @@ import click
 from hacktools import common, nds
 import game
 
-version = "0.8.0"
+version = "0.8.1"
 data = "VampireData/"
 romfile = data + "vampire.nds"
 rompatch = data + "vampire_patched.nds"
