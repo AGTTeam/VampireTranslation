@@ -95,7 +95,7 @@ def compress(indata):
             # common.logDebug("Copying bytes", common.toHex(complen), common.toHex(readbytes))
             out[complen] = firstcopy - 1
             complen += 1
-            for i in range(min(inlen - readbytes - 1, firstcopy)):
+            for i in range(min(inlen - readbytes, firstcopy)):
                 out[complen] = indata[readbytes]
                 readbytes += 1
                 complen += 1
