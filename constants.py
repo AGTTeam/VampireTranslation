@@ -359,15 +359,18 @@ manualcells = {
         {"cells": [{"width": 32, "height": 64}, {"width": 32, "height": 64, "y": 64}, {"width": 32, "height": 64, "y": 128}], "repeat": 8},
     ],
     "WC/000.ANCG": [
-        {"cells": [{"width": 64, "height": 64}], "repeat": 4, "pal": 5},
+        {"cells": [{"width": 64, "height": 64}], "pal": 0},
+        {"cells": [{"width": 64, "height": 64}], "pal": 1},
+        {"cells": [{"width": 64, "height": 64}], "pal": 2},
+        {"cells": [{"width": 64, "height": 64}], "pal": 3},
         {"cells": [
                     {"width": 32, "height": 64},
                     {"width": 16, "height": 32, "x": 32},
                     {"width": 8,  "height": 32, "x": 48},
                     {"width": 16, "height": 32, "x": 32, "y": 32},
                     {"width": 8,  "height": 32, "x": 48, "y": 32},
-                  ], "pal": 5},
-        {"cells": [{"width": 16, "height": 32}], "repeat": 4, "pal": 5},
+                  ], "pal": 4},
+        {"cells": [{"width": 16, "height": 32}], "repeat": 4, "pal": 6},
     ],
 }
 

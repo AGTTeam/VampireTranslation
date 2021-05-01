@@ -114,9 +114,9 @@ def run(data):
         with common.Stream(infolder + file, "rb") as fin:
             common.logDebug("Repacking", file)
             tiles, cells, palettes, bpp = images.readANCGGraphics(fin, file, infolder)
-            if cells is None:
-                continue
-        nitro.writeNCER(outfolder + file, "tempcell.bin", tiles, cells, pngfile, palettes, checkRepeat=False, writelen=False)
+        if cells is None:
+            continue
+        nitro.writeNCER(outfolder + file, "tempcell.bin", tiles, cells, pngfile, palettes, checkRepeat=False, writelen=False, checkalpha=True)
         totfiles += 1
     os.remove("tempcell.bin")
     common.logMessage("Done! Repacked", totfiles, "files")
