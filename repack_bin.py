@@ -57,6 +57,8 @@ def run(data, analyze=False):
                     strings[string] = lastgood
                 else:
                     common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
+                    if "<ch1>" in writestr and f.tell() % 4 > 0:
+                        f.writeZero(f.tell() % 4)
                     strings[string] = lastgood = f.tell()
                     game.writeString(f, writestr, table)
                     if "<ch1>" in writestr:

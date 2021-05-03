@@ -3,11 +3,10 @@ import click
 from hacktools import common, nds
 import game
 
-version = "0.8.2"
+version = "0.8.3"
 data = "VampireData/"
 romfile = data + "vampire.nds"
 rompatch = data + "vampire_patched.nds"
-headerfile = data + "extract/header.bin"
 bannerfile = data + "repack/banner.bin"
 patchfile = data + "patch.xdelta"
 infolder = data + "extract/"

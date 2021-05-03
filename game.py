@@ -63,6 +63,9 @@ def formatString(str):
 
 
 def writeString(f, s, table, maxlen=-1):
+    s = s.replace("<ch1>", "<ch1>_")
+    s = s.replace("<ch2>", "<ch2>_")
+    s = s.replace("<ch3>", "<ch3>_")
     group = 0
     totlen = 0
     for stringcode in constants.stringcodes:
@@ -77,6 +80,8 @@ def writeString(f, s, table, maxlen=-1):
                 break
             f.writeByte(0xa)
             totlen += 1
+        elif c == "_":
+            group = 0
         elif c == "<":
             if maxlen != -1 and totlen + 1 > maxlen:
                 common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
@@ -90,7 +95,7 @@ def writeString(f, s, table, maxlen=-1):
                 common.logError("Character", c, "not found for string", s)
             else:
                 charcode = table[c][0]
-                if len(table[c]) > 1:
+                if len(table[c]) > 1 and group > 0:
                     # Pick the best one
                     for ci in range(1, len(table[c])):
                         checkgroup = table[c][ci] >> 8
