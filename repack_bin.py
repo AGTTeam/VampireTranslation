@@ -9,11 +9,12 @@ def run(data, analyze=False):
     infile = data + "extract/arm9.bin"
     outfile = data + "repack/arm9.bin"
     fontdata = data + "font_data.bin"
+    dictionarydata = data + "dictionary.asm"
     binfile = data + "bin_input.txt"
     datfile = data + "dat_input.txt"
     binsize = os.path.getsize(infile)
     table, invtable = game.getTable(data)
-    glyphs = game.getGlyphs(data)
+    glyphs, dictionary = game.getGlyphs(data)
 
     if not os.path.isfile(binfile):
         common.logError("Input file", binfile, "not found")
@@ -59,7 +60,7 @@ def run(data, analyze=False):
                 else:
                     common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
                     strings[string] = lastgood = f.tell()
-                    game.writeString(f, writestr, table)
+                    game.writeString(f, writestr, table, dictionary)
                     if "<ch1>" in writestr:
                         f.writeByte(0)
                     if f.tell() >= constants.mainptr["end"]:
@@ -156,19 +157,29 @@ def run(data, analyze=False):
                         if "ptrpos" in jpstr and datname != "ItemShop":
                             # Write the string and update the pointer
                             strpos = f.tell()
-                            game.writeString(f, jpstr["str"], table, maxpos - f.tell())
+                            game.writeString(f, jpstr["str"], table, maxlen=maxpos - f.tell())
                             f.writeUIntAt(jpstr["ptrpos"], strpos + 0x02000000)
                         else:
                             # Try to fit the string in the given space
                             f.seek(jpstr["start"])
-                            game.writeString(f, jpstr["str"], table, jpstr["end"] - f.tell())
+                            game.writeString(f, jpstr["str"], table, maxlen=jpstr["end"] - f.tell())
                             while f.tell() < jpstr["end"]:
                                 f.writeByte(0)
     common.logMessage("Done! Translation is at {0:.2f}%".format((100 * transtot) / chartot))
 
-    # Export font data and apply armips patch
+    # Export font data, dictionary data and apply armips patch
     with common.Stream(fontdata, "wb") as f:
         for charcode in range(0x9010, 0x908f + 1):
             c = invtable[charcode]
             f.writeByte(glyphs[c].width)
+    with codecs.open(dictionarydata, "w", "utf-8") as f:
+        alldictionary = []
+        for dictentry in dictionary:
+            dictname = "DICTIONARY_" + common.toHex(dictionary[dictentry]).lower()
+            dictvalue = dictname + ":\n" + game.writeDictionaryString(dictentry, table)
+            f.write(".dw " + dictname + "\n")
+            alldictionary.append(dictvalue)
+        f.write("\n")
+        f.write("\n".join(alldictionary))
+        f.write("\n")
     common.armipsPatch("bin_patch.asm")

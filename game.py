@@ -62,7 +62,7 @@ def formatString(str):
     return str
 
 
-def writeString(f, s, table, maxlen=-1):
+def writeString(f, s, table, dictionary={}, maxlen=-1):
     s = s.replace("<ch1>", "<ch1>_")
     s = s.replace("<ch2>", "<ch2>_")
     s = s.replace("<ch3>", "<ch3>_")
@@ -72,6 +72,23 @@ def writeString(f, s, table, maxlen=-1):
         s = s.replace(constants.stringcodes[stringcode], stringcode)
     x = 0
     while x < len(s):
+        for dictentry in dictionary:
+            check = s[x:x+len(dictentry)]
+            if check == dictentry:
+                addlen = 2
+                if group != 0x90:
+                    addlen += 1
+                if maxlen != -1 and totlen + addlen > maxlen:
+                    common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                    break
+                common.logDebug("Writing dictionary entry", dictentry, "at", common.toHex(f.tell()), addlen)
+                if addlen > 2:
+                    f.writeByte(0x90)
+                f.writeByte(0x1)
+                f.writeByte(dictionary[dictentry])
+                totlen += addlen
+                x += len(dictentry)
+                continue
         c = s[x]
         x += 1
         if c == "|":
@@ -118,6 +135,28 @@ def writeString(f, s, table, maxlen=-1):
                     f.writeByte(charcode & 0xff)
                     totlen += 1
     f.writeByte(0)
+
+
+def writeDictionaryString(s, table):
+    ret = []
+    x = 0
+    group = 0x90
+    while x < len(s):
+        c = s[x]
+        x += 1
+        if c == 0xa:
+            ret.append(".db 0xa")
+        else:
+            charcode = table[c][0]
+            chargroup = charcode >> 8
+            if group != chargroup:
+                group = chargroup
+                ret.append(".db 0x" + common.toHex(group).lower())
+            ret.append(".db 0x" + common.toHex(charcode & 0xff).lower())
+    if group != 0x90:
+        ret.append(".db 0x90")
+    ret.append(".db 0x0")
+    return " :: ".join(ret)
 
 
 def detectTextCode(s, i=0):
@@ -215,13 +254,19 @@ def getTable(data):
 
 def getGlyphs(data):
     glyphs = {}
+    dictionary = {}
     if not os.path.isfile(data + "fontconfig.txt"):
         common.logError("fontconfig.txt file not found")
         return glyphs
+    dicti = 0xb
     with codecs.open(data + "fontconfig.txt", "r", "utf-8") as f:
         fontconfig = common.getSection(f, "", comment="##")
         for c in fontconfig:
             charlen = 0 if fontconfig[c][0] == "" else int(fontconfig[c][0])
             c = c.replace("<3D>", "=")
-            glyphs[c] = common.FontGlyph(0, charlen, charlen)
-    return glyphs
+            if charlen == 0:
+                dictionary[c] = dicti
+                dicti += 1
+            else:
+                glyphs[c] = common.FontGlyph(0, charlen, charlen)
+    return glyphs, dictionary

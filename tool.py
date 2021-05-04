@@ -1,9 +1,11 @@
+import codecs
 import os
+import re
 import click
 from hacktools import common, nds
 import game
 
-version = "0.8.3"
+version = "0.9.0"
 data = "VampireData/"
 romfile = data + "vampire.nds"
 rompatch = data + "vampire_patched.nds"
@@ -73,13 +75,44 @@ def translate(text):
     ret = ""
     group = 0
     for c in text:
-        charcode = table[c]
+        charcode = table[c][0]
         chargroup = charcode >> 8
         if group != chargroup:
             group = chargroup
             ret += common.toHex(group)
         ret += common.toHex(charcode & 0xff)
     common.logMessage(ret)
+
+
+@common.cli.command()
+def frequency():
+    with codecs.open(data + "bin_input.txt", "r", "utf8") as bin:
+        section = common.getSection(bin, "")
+    allstrings = []
+    cleanre = re.compile('<.*?>')
+    for jpstr in section:
+        translation = section[jpstr][0]
+        if translation != "":
+            translation = re.sub(cleanre, "|", translation)
+            if translation not in allstrings:
+                allstrings.append(translation)
+    freqs = {}
+    for string in allstrings:
+        string = string.replace(".", "").replace(",", "").replace("(", "").replace(")", "").replace("\"", "")
+        words = string.replace("|", " ").split(" ")
+        for word in words:
+            if len(word) <= 2:
+                continue
+            score = len(word) - 2
+            if word in freqs:
+                freqs[word] += score
+            else:
+                freqs[word] = score
+    freqs = dict(sorted(freqs.items(), key=lambda item: item[1], reverse=True))
+    for freq in freqs:
+        if freqs[freq] < 100:
+            break
+        common.logMessage(freq + ": " + str(freqs[freq]))
 
 
 if __name__ == "__main__":
