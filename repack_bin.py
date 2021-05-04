@@ -49,16 +49,15 @@ def run(data, analyze=False):
             for string in strings:
                 writestr = string
                 if strings[string] == -1:
-                    writestr = writestr.replace("<0A>", "|")
-                    writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
+                    if "<ch1>" not in writestr:
+                        writestr = writestr.replace("<0A>", "|")
+                        writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
                 if outofspace:
                     common.logDebug("Skipping string", writestr)
                     outchars += len(writestr) - writestr.count("<") * 3
                     strings[string] = lastgood
                 else:
                     common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
-                    if "<ch1>" in writestr and f.tell() % 4 > 0:
-                        f.writeZero(f.tell() % 4)
                     strings[string] = lastgood = f.tell()
                     game.writeString(f, writestr, table)
                     if "<ch1>" in writestr:
