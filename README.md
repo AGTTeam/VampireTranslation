@@ -12,6 +12,20 @@ Download [armips.exe](https://github.com/Kingcom/armips/releases).
 Download xdelta.exe.  
 Run `pipenv install`.  
 Run the tool with `pipenv run tool.py` or build with `pipenv run pyinstaller tool.spec`.  
+## Font Editing
+Copy `font_output.png` to `font_input.png` and edit it.  
+The glyphs should be in the same order as the `fontconfig.txt` file, where you should also specify the glyph size.  
+To fit more characters in text lines, the tool supports a simple dictionary compression where any sentence or word can be shortened to 2 bytes.  
+You can add words at the bottom of the file and not specify any length after the `=` sign. Longer words should come first.  
+Limitations: no codes like `<name>`, and up to a maximum of 240 words.  
+Format example (set A and B to 5 pixels of width, add "something" "Day Class" and "Day" to the dictionary):
+```
+A=5
+B=5
+something=
+Day Class=
+Day=
+```
 ## Text Editing
 Rename the \*\_output.txt files to \*\_input.txt (bin_output.txt to bin_input.txt, etc) and add translations for each line after the `=` sign.  
 The text in wsb_input is automatically wordwrapped (WIP), but a `|` can be used to force a line break.  
