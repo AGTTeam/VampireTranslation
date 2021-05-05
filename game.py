@@ -81,7 +81,7 @@ def writeString(f, s, table, dictionary={}, maxlen=-1):
                 if maxlen != -1 and totlen + addlen > maxlen:
                     common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                     break
-                common.logDebug("Writing dictionary entry", dictentry, "at", common.toHex(f.tell()), addlen)
+                # common.logDebug("Writing dictionary entry", dictentry, "at", common.toHex(f.tell()), addlen)
                 if addlen > 2:
                     f.writeByte(0x90)
                 f.writeByte(0x1)

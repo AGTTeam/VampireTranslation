@@ -155,14 +155,16 @@ def run(data, analyze=False):
                     f.seek(minpos)
                     for jpstr in allstrings:
                         if "ptrpos" in jpstr and datname != "ItemShop":
+                            common.logDebug("Writing pointer string", jpstr["str"], "at", common.toHex(f.tell()))
                             # Write the string and update the pointer
                             strpos = f.tell()
-                            game.writeString(f, jpstr["str"], table, maxlen=maxpos - f.tell())
+                            game.writeString(f, jpstr["str"], table, dictionary, maxlen=maxpos - f.tell())
                             f.writeUIntAt(jpstr["ptrpos"], strpos + 0x02000000)
                         else:
                             # Try to fit the string in the given space
                             f.seek(jpstr["start"])
-                            game.writeString(f, jpstr["str"], table, maxlen=jpstr["end"] - f.tell())
+                            common.logDebug("Writing fixed string", jpstr["str"], "at", common.toHex(f.tell()))
+                            game.writeString(f, jpstr["str"], table, dictionary, maxlen=jpstr["end"] - f.tell())
                             while f.tell() < jpstr["end"]:
                                 f.writeByte(0)
     common.logMessage("Done! Translation is at {0:.2f}%".format((100 * transtot) / chartot))

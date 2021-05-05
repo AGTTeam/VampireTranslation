@@ -54,39 +54,69 @@
   b VWF_RETURN
   .pool
 
+  DICTIONARY_DAT:
+  cmp r1,0x1
+  bne @@ret
+  ;Get the output string pointer
+  ;Do this before pushing registers on the stack
+  add r1,sp,0x14
+  push {r0,r2}
+  ;Get the current offset in the output string
+  mov r2,r12
+  ;Get the dictionary entry and increase input pointer
+  ldrb r0,[r5]
+  add r5,r5,0x1
+  ;Call the dictionary function
+  bl DICTIONARY_FUNC
+  mov r12,r0
+  pop {r0,r2}
+  mov r1,0x1
+  b DICTIONARY_DAT_NORMAL
+  @@ret:
+  cmp r1,0x9
+  b DICTIONARY_DAT_RETURN
+
   DICTIONARY:
   ;Check if r0 is <= 0xa
   cmp r0,0xa
   ble DICTIONARY_RETURN
-  ;Get the dictionary pointer
-  sub r0,r0,0xb
-  lsl r0,r0,0x2
-  ldr r1,=DICTIONARY_DATA
-  add r0,r0,r1
-  ldr r0,[r0]
   ;Get the output string pointer
   add r1,sp,0x40
   ;Get the current offset in the output string
   ldrsh r2,[sp,0x28]
-  ;Copy the dictionary data to the output string
-  push {r3-r4}
-  mov r3,0x0
-  @@loop:
-  ldrb r4,[r0,r3]
-  cmp r4,0x0
-  beq @@end
-  strb r4,[r1,r2]
-  add r2,r2,0x1
-  add r3,r3,0x1
-  b @@loop
-  @@end:
-  pop {r3-r4}
+  ;Call the dictionary function
+  bl DICTIONARY_FUNC
   ;Store the new offset
-  strh r2,[sp,0x28]
+  strh r0,[sp,0x28]
   ;Return to normal execution
   mov r0,0xb
   cmp r0,0xa
   b DICTIONARY_NORMAL
+
+  ;r0 = dictionary entry
+  ;r1 = output string pointer
+  ;r2 = output offset
+  DICTIONARY_FUNC:
+  push {lr,r3-r4}
+  ;Get the dictionary pointer
+  sub r0,r0,0xb
+  lsl r0,r0,0x2
+  ldr r3,=DICTIONARY_DATA
+  add r0,r0,r3
+  ldr r0,[r0]
+  ;Copy the dictionary data to the output string
+  mov r3,0x0
+  @@loop:
+  ldrb r4,[r0,r3]
+  cmp r4,0x0
+  moveq r0,r2
+  beq @@ret
+  strb r4,[r1,r2]
+  add r2,r2,0x1
+  add r3,r3,0x1
+  b @@loop
+  @@ret:
+  pop {pc,r3-r4}
   .pool
 
   .align
@@ -112,6 +142,14 @@
   DICTIONARY_RETURN:
 .org 0x0202ddb0
   DICTIONARY_NORMAL:
+
+; Jump to custom code from the DAT text parsing function
+.org 0x0203ce6c
+  ; cmp r1,0x9
+  b DICTIONARY_DAT
+  DICTIONARY_DAT_RETURN:
+.org 0x0203cf04
+  DICTIONARY_DAT_NORMAL:
 
 
 .org 0x0202e544
