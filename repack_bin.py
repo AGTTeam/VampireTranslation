@@ -182,4 +182,4 @@ def run(data, analyze=False):
         f.write("\n")
         f.write("\n".join(alldictionary))
         f.write("\n")
-    common.armipsPatch("bin_patch.asm")
+    common.armipsPatch(common.bundledFile("bin_patch.asm"))
