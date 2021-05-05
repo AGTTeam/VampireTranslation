@@ -4,7 +4,7 @@ from hacktools import common, compression
 import game
 
 
-def run(data):
+def run(data, testuncomp=False):
     armfilein = data + "extract/arm9.bin"
     armfileout = data + "repack/arm9.bin"
     oldfolder = data + "extract_BMP/"
@@ -35,7 +35,7 @@ def run(data):
                     subname = archive + "/" + subfile
                     newcrc = common.toHex(common.crcFile(newsubfolder + subfile))
                     oldcrc = common.toHex(common.crcFile(oldsubfolder + subfile))
-                    if newcrc == oldcrc:
+                    if newcrc == oldcrc and subname not in cache:
                         common.logDebug("Skipping", subname, newcrc, oldcrc)
                         filediff.append(False)
                     else:
@@ -66,6 +66,13 @@ def run(data):
                                 cdata = compress(uncdata)
                                 f.write(cdata)
                                 repacked += 1
+                                if testuncomp:
+                                    import extract_bmp
+                                    testname = (folder + subfile).replace("/", "_") + "_test"
+                                    with common.Stream(testname, "wb+") as testf:
+                                        testf.write(cdata)
+                                        testf.seek(0)
+                                        extract_bmp.decompressData(testf, testname + "2", unclen, len(cdata))
                             else:
                                 oldf.seek(offptr[i]["offset"])
                                 f.write(oldf.read(offptr[i]["size"]))

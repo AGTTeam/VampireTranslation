@@ -57,39 +57,44 @@ def decompress(f, offsets, size, out):
             break
         common.logDebug("uncsize", common.toHex(uncsize))
         filename = str(i).zfill(3) + ".BIN"
-        magic = ""
-        with common.Stream(out + filename, "wb+") as fout:
-            while fout.tell() < uncsize and f.tell() < size:
-                mask = f.readByte()
-                if mask >> 7 == 0:
-                    # If the last bit is not set, just copy mask+1 bytes
-                    mask += 1
-                    # common.logDebug("mask", mask)
-                    fout.write(f.read(mask))
-                else:
-                    # Otherwise, take 5 bits + 3 as a count
-                    # And the next byte + first 2 bits from the mask for the offset + 1
-                    count = (mask >> 2) & 0x1f
-                    count += 3
-                    offset = f.readByte()
-                    offset |= ((mask & 3) << 8)
-                    offset += 1
-                    pos = fout.tell()
-                    # common.logDebug("count", common.toHex(count), "offset", common.toHex(offset), common.toHex(pos))
-                    for j in range(count):
-                        byte = fout.readByteAt(pos - offset + j)
-                        fout.writeByte(byte)
-            fout.seek(0)
-            checkmagic = fout.readString(4)
-            if len(checkmagic) == 4 and common.isAscii(checkmagic):
-                magic = checkmagic
-            else:
-                fout.seek(0)
-                paloff = fout.readUInt()
-                tileoff = fout.readUInt()
-                if (paloff == 0x3 and tileoff > 0) or (paloff == 0x0 and tileoff == 0x3):
-                    magic = "IMG"
+        magic = decompressData(f, out + filename, uncsize, size)
         common.logDebug("Finished at", common.toHex(f.tell()))
         if magic != "":
             os.rename(out + filename, out + filename.replace(".BIN", "." + magic))
         i += 1
+
+
+def decompressData(f, out, uncsize, size):
+    magic = ""
+    with common.Stream(out, "wb+") as fout:
+        while fout.tell() < uncsize and f.tell() < size:
+            mask = f.readByte()
+            if mask >> 7 == 0:
+                # If the last bit is not set, just copy mask+1 bytes
+                mask += 1
+                # common.logDebug("mask", mask)
+                fout.write(f.read(mask))
+            else:
+                # Otherwise, take 5 bits + 3 as a count
+                # And the next byte + first 2 bits from the mask for the offset + 1
+                count = (mask >> 2) & 0x1f
+                count += 3
+                offset = f.readByte()
+                offset |= ((mask & 3) << 8)
+                offset += 1
+                pos = fout.tell()
+                # common.logDebug("count", common.toHex(count), "offset", common.toHex(offset), common.toHex(pos))
+                for j in range(count):
+                    byte = fout.readByteAt(pos - offset + j)
+                    fout.writeByte(byte)
+        fout.seek(0)
+        checkmagic = fout.readString(4)
+        if len(checkmagic) == 4 and common.isAscii(checkmagic):
+            magic = checkmagic
+        else:
+            fout.seek(0)
+            paloff = fout.readUInt()
+            tileoff = fout.readUInt()
+            if (paloff == 0x3 and tileoff > 0) or (paloff == 0x0 and tileoff == 0x3):
+                magic = "IMG"
+    return magic
