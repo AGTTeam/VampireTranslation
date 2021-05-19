@@ -5,7 +5,7 @@ import constants
 import game
 
 
-def run(data, analyze=False):
+def run(data, copybin=False, analyze=False):
     infile = data + "extract/arm9.bin"
     outfile = data + "repack/arm9.bin"
     fontdata = data + "font_data.bin"
@@ -38,7 +38,10 @@ def run(data, analyze=False):
             elif jpstr not in strings:
                 strings[jpstr] = 0
 
-    # common.copyFile(infile, outfile)
+    if copybin:
+        common.copyFile(infile, outfile)
+        if os.path.isfile(data + "bmpcache.txt"):
+            os.remove(data + "bmpcache.txt")
     with common.Stream(infile, "rb") as fin:
         ptrgroups, allptrs = game.getBINPointerGroups(fin)
         with common.Stream(outfile, "rb+") as f:
@@ -111,13 +114,18 @@ def run(data, analyze=False):
                     # Read all strings first
                     allstrings = []
                     for datptr in datptrs:
+                        writegroups = "writegroups" in datptr and datptr["writegroups"]
+                        usedictionary = "dictionary" in datptr and datptr["dictionary"]
                         fin.seek(datptr["offset"])
                         if "end" in datptr:
                             while fin.tell() < datptr["end"]:
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
+                                if "wordwrap" in datptr:
+                                    jpstr = common.wordwrap(jpstr, glyphs, datptr["wordwrap"], game.detectTextCode, default=0xa)
                                 fin.readZeros(binsize)
-                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr})
+                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
+                                                   "writegroups": writegroups, "dictionary": usedictionary})
                         else:
                             ptrs = []
                             for i in range(datptr["count"]):
@@ -127,8 +135,11 @@ def run(data, analyze=False):
                                 fin.seek(ptrs[i]["address"])
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
+                                if "wordwrap" in datptr:
+                                    jpstr = common.wordwrap(jpstr, glyphs, datptr["wordwrap"], game.detectTextCode, default=0xa)
                                 fin.readZeros(binsize)
-                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr, "ptrpos": ptrs[i]["pos"]})
+                                allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
+                                                   "ptrpos": ptrs[i]["pos"], "writegroups": writegroups, "dictionary": usedictionary})
                     # Check how much space is used by these strings and update them with the translations
                     minpos = 0xffffffff
                     maxpos = 0
@@ -158,13 +169,13 @@ def run(data, analyze=False):
                             common.logDebug("Writing pointer string", jpstr["str"], "at", common.toHex(f.tell()))
                             # Write the string and update the pointer
                             strpos = f.tell()
-                            game.writeString(f, jpstr["str"], table, dictionary, maxlen=maxpos - f.tell())
+                            game.writeString(f, jpstr["str"], table, dictionary if jpstr["dictionary"] else {}, maxlen=maxpos - f.tell(), writegroups=jpstr["writegroups"])
                             f.writeUIntAt(jpstr["ptrpos"], strpos + 0x02000000)
                         else:
                             # Try to fit the string in the given space
                             f.seek(jpstr["start"])
                             common.logDebug("Writing fixed string", jpstr["str"], "at", common.toHex(f.tell()))
-                            game.writeString(f, jpstr["str"], table, dictionary, maxlen=jpstr["end"] - f.tell())
+                            game.writeString(f, jpstr["str"], table, dictionary if jpstr["dictionary"] else {}, maxlen=jpstr["end"] - f.tell(), writegroups=jpstr["writegroups"])
                             while f.tell() < jpstr["end"]:
                                 f.writeByte(0)
     common.logMessage("Done! Translation is at {0:.2f}%".format((100 * transtot) / chartot))

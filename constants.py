@@ -9,7 +9,10 @@ wordwrap = 160
 
 # Pointers to various strings, with "offset" and pointer "count"
 # If "main" is set to true, these are mixed in with normal text
+# Strings in main sections are automatically wordwrapped, "wordwrap" with a number value (line width) can be used for other groups
 # If "dataonly" is set to true, they will be just exported as data without string parsing
+# If "writegroups" is set to true, all characters group are written to the string, even repeating ones
+# If "dictionary" is set to false, the strings are not shortened with the dictionary entries
 # If it's a section with fixed-size strings with no pointers, an "end" offset can be set instead of "count"
 datptrs = {
     "Letters": [
@@ -63,19 +66,20 @@ datptrs = {
                       {"offset": 0x1ae964, "count": 31},
     ],
     "NameEntry": [
-                      {"offset": 0x1b8b80, "count": 40},
-                      {"offset": 0x1b8c24, "count": 14},
+                      {"offset": 0x1b8b80, "count": 40, "writegroups": True},
+                      {"offset": 0x1b8c24, "count": 12, "writegroups": True},
+                      {"offset": 0x1B8C54, "count": 2},
     ],
     "SaveLoad":       {"offset": 0x1b9fec, "count": 6},
     "Options":        {"offset": 0x1babac, "count": 4},
     "VoiceData":      {"offset": 0x1c05a0, "count": 0},
-    "Dresses":        {"offset": 0x1c8e08,   "end": 0x1c8f9b},
+    "Dresses":        {"offset": 0x1c8e08,   "end": 0x1c8f9b, "dictionary": False},
     "ShowingDresses": {"offset": 0x1c8f9c, "count": 6},
-    "Items":          {"offset": 0x1c9690,   "end": 0x1c9c23},
+    "Items":          {"offset": 0x1c9690,   "end": 0x1c9c23, "dictionary": False},
     "Minigame":       {"offset": 0x1cd120, "count": 1},
     "Minigames":      {"offset": 0x1cd130, "count": 9},
-    "CharacterNames": {"offset": 0x1cde40, "count": 8},
-    "AdditionalText": {"offset": 0x1cee84,   "end": 0x1d2be4},
+    "CharacterNames": {"offset": 0x1cde40, "count": 8,        "dictionary": False},
+    "AdditionalText": {"offset": 0x1cee84,   "end": 0x1d2be4, "wordwrap": wordwrap},
     "Prices":         {"offset": 0x1d3228, "count": 11},
     "ItemShop": [
                       {"offset": 0x1d3314, "count": 1},

@@ -62,7 +62,7 @@ def formatString(str):
     return str
 
 
-def writeString(f, s, table, dictionary={}, maxlen=-1):
+def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False):
     s = s.replace("<ch1>", "<ch1>_")
     s = s.replace("<ch2>", "<ch2>_")
     s = s.replace("<ch3>", "<ch3>_")
@@ -72,23 +72,24 @@ def writeString(f, s, table, dictionary={}, maxlen=-1):
         s = s.replace(constants.stringcodes[stringcode], stringcode)
     x = 0
     while x < len(s):
-        for dictentry in dictionary:
-            check = s[x:x+len(dictentry)]
-            if check == dictentry:
-                addlen = 2
-                if group != 0x90:
-                    addlen += 1
-                if maxlen != -1 and totlen + addlen > maxlen:
-                    common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
-                    break
-                # common.logDebug("Writing dictionary entry", dictentry, "at", common.toHex(f.tell()), addlen)
-                if addlen > 2:
-                    f.writeByte(0x90)
-                f.writeByte(0x1)
-                f.writeByte(dictionary[dictentry])
-                totlen += addlen
-                x += len(dictentry)
-                continue
+        if not writegroups:
+            for dictentry in dictionary:
+                check = s[x:x+len(dictentry)]
+                if check == dictentry:
+                    addlen = 2
+                    if group != 0x90:
+                        addlen += 1
+                    if maxlen != -1 and totlen + addlen > maxlen:
+                        common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        break
+                    # common.logDebug("Writing dictionary entry", dictentry, "at", common.toHex(f.tell()), addlen)
+                    if addlen > 2:
+                        f.writeByte(0x90)
+                    f.writeByte(0x1)
+                    f.writeByte(dictionary[dictentry])
+                    totlen += addlen
+                    x += len(dictentry)
+                    continue
         c = s[x]
         x += 1
         if c == "|":
@@ -120,7 +121,7 @@ def writeString(f, s, table, dictionary={}, maxlen=-1):
                             charcode = table[c][ci]
                             break
                 chargroup = charcode >> 8
-                if group != chargroup:
+                if group != chargroup or writegroups:
                     if maxlen != -1 and totlen + 2 > maxlen:
                         common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                         break
