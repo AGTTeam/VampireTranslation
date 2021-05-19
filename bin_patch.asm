@@ -57,18 +57,20 @@
   DICTIONARY_DAT:
   cmp r1,0x1
   bne @@ret
-  ;Get the output string pointer
-  ;Do this before pushing registers on the stack
+  ; Get the output string pointer
+  ; Do this before pushing registers on the stack
   add r1,sp,0x14
   push {r0,r2}
-  ;Get the current offset in the output string
+  ; Get the current offset in the output string
   mov r2,r12
-  ;Get the dictionary entry and increase input pointer
+  ; Get the dictionary entry and increase input pointer
   ldrb r0,[r5]
   add r5,r5,0x1
-  ;Call the dictionary function
+  ; Call the dictionary function
   bl DICTIONARY_FUNC
+  ; Store the new offset
   mov r12,r0
+  ; Return to normal execution
   pop {r0,r2}
   mov r1,0x1
   b DICTIONARY_DAT_NORMAL
@@ -77,34 +79,34 @@
   b DICTIONARY_DAT_RETURN
 
   DICTIONARY:
-  ;Check if r0 is <= 0xa
+  ; Check if r0 is <= 0xa
   cmp r0,0xa
   ble DICTIONARY_RETURN
-  ;Get the output string pointer
+  ; Get the output string pointer
   add r1,sp,0x40
-  ;Get the current offset in the output string
+  ; Get the current offset in the output string
   ldrsh r2,[sp,0x28]
-  ;Call the dictionary function
+  ; Call the dictionary function
   bl DICTIONARY_FUNC
-  ;Store the new offset
+  ; Store the new offset
   strh r0,[sp,0x28]
-  ;Return to normal execution
+  ; Return to normal execution
   mov r0,0xb
   cmp r0,0xa
   b DICTIONARY_NORMAL
 
-  ;r0 = dictionary entry
-  ;r1 = output string pointer
-  ;r2 = output offset
+  ; r0 = dictionary entry
+  ; r1 = output string pointer
+  ; r2 = output offset
   DICTIONARY_FUNC:
   push {lr,r3-r4}
-  ;Get the dictionary pointer
+  ; Get the dictionary pointer
   sub r0,r0,0xb
   lsl r0,r0,0x2
   ldr r3,=DICTIONARY_DATA
   add r0,r0,r3
   ldr r0,[r0]
-  ;Copy the dictionary data to the output string
+  ; Copy the dictionary data to the output string
   mov r3,0x0
   @@loop:
   ldrb r4,[r0,r3]
@@ -117,6 +119,49 @@
   b @@loop
   @@ret:
   pop {pc,r3-r4}
+  .pool
+
+
+  STRLEN:
+  push {lr,r1-r4}
+  ldr r1,=FONT_DATA
+  mov r3,0x0
+  mov r4,0x0
+  ; Add the font width in r4
+  @@loop:
+  ldrb r2,[r0],0x1
+  cmp r2,0x0
+  beq @@end
+  ; Check if this is a group
+  cmp r2,0x90
+  movge r3,r2
+  bge @@loop
+  ; If this isn't group 0x90, just add a fixed value
+  cmp r3,0x91
+  addeq r4,r4,6
+  beq @@loop
+  addgt r4,r4,12
+  bgt @@loop
+  ; Get the character width
+  add r2,r1,r2
+  sub r2,r2,0x10
+  ldrb r2,[r2]
+  add r4,r4,r2
+  b @@loop
+  @@end:
+  mov r2,r4
+  ; Divide by 6: ((x * 0xaaab) >> 0x10) >> 0x2
+  ldr r1,=0xaaab
+  mul r4,r4,r1
+  lsr r4,r4,0x10
+  lsr r4,r4,0x2
+  ; Round up
+  sub r2,r2,r4
+  cmp r2,0x3
+  addge r4,r4,0x1
+  ; Return
+  mov r0,r4
+  pop {pc,r1-r4}
   .pool
 
   .align
@@ -150,6 +195,30 @@
   DICTIONARY_DAT_RETURN:
 .org 0x0203cf04
   DICTIONARY_DAT_NORMAL:
+
+; Replace strlen calls with our custom one
+; 0x0203c9b8
+.org 0x0202c994
+  bl STRLEN
+.org 0x02047ea4
+  bl STRLEN
+; 0x0203d190
+.org 0x0203d3e0
+  bl STRLEN
+.org 0x0204c7d0
+  bl STRLEN
+.org 0x0204c828
+  bl STRLEN
+.org 0x0204c880
+  bl STRLEN
+.org 0x0204c8d8
+  bl STRLEN
+.org 0x0204c930
+  bl STRLEN
+.org 0x0204c988
+  bl STRLEN
+.org 0x0204c9d8
+  bl STRLEN
 
 
 .org 0x0202e544
