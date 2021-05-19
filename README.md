@@ -28,7 +28,8 @@ Day=
 ```
 ## Text Editing
 Rename the \*\_output.txt files to \*\_input.txt (bin_output.txt to bin_input.txt, etc) and add translations for each line after the `=` sign.  
-The text in wsb_input is automatically wordwrapped (WIP), but a `|` can be used to force a line break.  
+The text in wsb_input is automatically wordwrapped, but a `|` can be used to force a line break.  
+The `>>` can be used at the start of strings that need to avoid using the dictionary feature, for example character names.  
 Control codes are specified as `<XX>`, they should usually be kept.  
 Comments can be added at the end of lines by using `#`.  
 ## Image Editing
