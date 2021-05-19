@@ -62,8 +62,12 @@ def run(data, copybin=False, analyze=False):
                     strings[string] = lastgood
                 else:
                     common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
+                    usedictionary = True
+                    if writestr.startswith(">>"):
+                        usedictionary = False
+                        writestr = writestr[2:]
                     strings[string] = lastgood = f.tell()
-                    game.writeString(f, writestr, table, dictionary)
+                    game.writeString(f, writestr, table, usedictionary and dictionary or {})
                     if "<ch1>" in writestr:
                         f.writeByte(0)
                     if f.tell() >= constants.mainptr["end"]:
@@ -76,6 +80,7 @@ def run(data, copybin=False, analyze=False):
                 common.logMessage("Room for", common.toHex(constants.mainptr["end"] - f.tell()), "more bytes")
             # Change pointers
             for ptrgroup in ptrgroups:
+                atstr = "@" + common.toHex(ptrgroup)
                 for ptr in ptrgroups[ptrgroup]:
                     f.seek(ptr["pos"])
                     fin.seek(ptr["ptr"])
@@ -83,7 +88,9 @@ def run(data, copybin=False, analyze=False):
                         jpstr = game.readData(fin, allptrs)
                     else:
                         jpstr = game.readString(fin, invtable, allptrs)
-                    if jpstr in translations:
+                    if jpstr + atstr in translations:
+                        jpstr = translations[jpstr + atstr]
+                    elif jpstr in translations:
                         jpstr = translations[jpstr]
                     if jpstr not in strings:
                         common.logError("String", jpstr, "not found")

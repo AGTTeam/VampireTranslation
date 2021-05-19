@@ -149,16 +149,16 @@
   add r4,r4,r2
   b @@loop
   @@end:
-  mov r2,r4
+  ; mov r2,r4
   ; Divide by 6: ((x * 0xaaab) >> 0x10) >> 0x2
   ldr r1,=0xaaab
   mul r4,r4,r1
   lsr r4,r4,0x10
   lsr r4,r4,0x2
   ; Round up
-  sub r2,r2,r4
-  cmp r2,0x3
-  addge r4,r4,0x1
+  ; sub r2,r2,r4
+  ; cmp r2,0x3
+  ; addge r4,r4,0x1
   ; Return
   mov r0,r4
   pop {pc,r1-r4}
