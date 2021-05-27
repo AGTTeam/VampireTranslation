@@ -160,6 +160,22 @@ def writeDictionaryString(s, table):
     return " :: ".join(ret)
 
 
+def alignLeft(s, glyphs, totlen=0x78):
+    alignglyphs = ["", "ｼ", " ", "ｽ", "ｾ", "ｿ", "ﾜ", "ｻ", "ｺ", "ｹ", "ｸ", "ｷ", "ｶ"]
+    strlen = 0
+    for c in s:
+        strlen += glyphs[c].length if "c" in glyphs else 6
+    maxlen = len(alignglyphs) - 1
+    while strlen < totlen:
+        if totlen - strlen >= maxlen:
+            s += alignglyphs[maxlen]
+            strlen += maxlen
+        else:
+            s += alignglyphs[totlen - strlen]
+            strlen = totlen
+    return s
+
+
 def detectTextCode(s, i=0):
     if s[i] == "<":
         return len(s[i:].split(">", 1)[0]) + 1

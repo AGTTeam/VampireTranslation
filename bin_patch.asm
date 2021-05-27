@@ -121,6 +121,16 @@
   pop {pc,r3-r4}
   .pool
 
+  STRLEN_DIV:
+  push {lr,r1}
+  bl STRLEN
+  ; Divide by 6: ((x * 0xaaab) >> 0x10) >> 0x2
+  ldr r1,=0xaaab
+  mul r0,r0,r1
+  lsr r0,r0,0x10
+  lsr r0,r0,0x2
+  pop {pc,r1}
+  .pool
 
   STRLEN:
   push {lr,r1-r4}
@@ -149,21 +159,14 @@
   add r4,r4,r2
   b @@loop
   @@end:
-  ; mov r2,r4
-  ; Divide by 6: ((x * 0xaaab) >> 0x10) >> 0x2
-  ldr r1,=0xaaab
-  mul r4,r4,r1
-  lsr r4,r4,0x10
-  lsr r4,r4,0x2
-  ; Round up
-  ; sub r2,r2,r4
-  ; cmp r2,0x3
-  ; addge r4,r4,0x1
   ; Return
   mov r0,r4
   pop {pc,r1-r4}
   .pool
+.endarea
 
+.org 0x021c3018
+.area 0x1bf,0  ; up to 0x021c31d7
   .align
   REPLACE_PTR:
   .area 0x100,0
@@ -196,29 +199,30 @@
 .org 0x0203cf04
   DICTIONARY_DAT_NORMAL:
 
+
 ; Replace strlen calls with our custom one
 ; 0x0203c9b8
 .org 0x0202c994
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x02047ea4
-  bl STRLEN
+  bl STRLEN_DIV
 ; 0x0203d190
 .org 0x0203d3e0
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x0204c7d0
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x0204c828
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x0204c880
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x0204c8d8
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x0204c930
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x0204c988
-  bl STRLEN
+  bl STRLEN_DIV
 .org 0x0204c9d8
-  bl STRLEN
+  bl STRLEN_DIV
 
 
 .org 0x0202e544
@@ -233,6 +237,7 @@
 
 ; Redirect some error codes
 ERROR_PTR equ 0x021c2394
+UNKNOWN_PTR equ 0x021c3010
 .org 0x02055f30
   .dw ERROR_PTR
 .org 0x02055f38
@@ -282,6 +287,31 @@ ERROR_PTR equ 0x021c2394
 .org 0x0205776c
   .dw ERROR_PTR
 .org 0x02057b40
+  .dw ERROR_PTR
+
+.org 0x020597b8
+  .dw ERROR_PTR
+.org 0x02059858
+  .dw ERROR_PTR
+.org 0x0205985c
+  .dw ERROR_PTR
+.org 0x02059938
+  .dw ERROR_PTR
+.org 0x0205993c
+  .dw ERROR_PTR
+.org 0x02059944
+  .dw ERROR_PTR
+.org 0x02059948
+  .dw UNKNOWN_PTR
+.org 0x02059c80
+  .dw ERROR_PTR
+.org 0x02059c84
+  .dw ERROR_PTR
+.org 0x02059c88
+  .dw ERROR_PTR
+.org 0x02059e28
+  .dw ERROR_PTR
+.org 0x02059e30
   .dw ERROR_PTR
 
 .close

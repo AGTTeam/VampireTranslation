@@ -123,16 +123,15 @@ def run(data, copybin=False, analyze=False):
                     for datptr in datptrs:
                         writegroups = "writegroups" in datptr and datptr["writegroups"]
                         usedictionary = "dictionary" in datptr and datptr["dictionary"]
+                        wordwrap = "wordwrap" in datptr and datptr["wordwrap"] or 0
                         fin.seek(datptr["offset"])
                         if "end" in datptr:
                             while fin.tell() < datptr["end"]:
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
-                                if "wordwrap" in datptr:
-                                    jpstr = common.wordwrap(jpstr, glyphs, datptr["wordwrap"], game.detectTextCode, default=0xa)
                                 fin.readZeros(binsize)
                                 allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
-                                                   "writegroups": writegroups, "dictionary": usedictionary})
+                                                   "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap})
                         else:
                             ptrs = []
                             for i in range(datptr["count"]):
@@ -142,11 +141,9 @@ def run(data, copybin=False, analyze=False):
                                 fin.seek(ptrs[i]["address"])
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
-                                if "wordwrap" in datptr:
-                                    jpstr = common.wordwrap(jpstr, glyphs, datptr["wordwrap"], game.detectTextCode, default=0xa)
                                 fin.readZeros(binsize)
                                 allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
-                                                   "ptrpos": ptrs[i]["pos"], "writegroups": writegroups, "dictionary": usedictionary})
+                                                   "ptrpos": ptrs[i]["pos"], "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap})
                     # Check how much space is used by these strings and update them with the translations
                     minpos = 0xffffffff
                     maxpos = 0
@@ -160,6 +157,10 @@ def run(data, copybin=False, analyze=False):
                             jpstr["str"] = section[check].pop()
                             if len(section[check]) == 0:
                                 del section[check]
+                            if jpstr["wordwrap"] > 0:
+                                jpstr["str"] = common.wordwrap(jpstr["str"], glyphs, jpstr["wordwrap"], game.detectTextCode, default=0xa)
+                            if jpstr["str"].startswith("<<"):
+                                jpstr["str"] = game.alignLeft(jpstr["str"][2:], glyphs)
                     if analyze:
                         allspace = []
                         for i in range(minpos, maxpos + 1):
