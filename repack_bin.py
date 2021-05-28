@@ -65,7 +65,7 @@ def run(data, copybin=False, analyze=False):
                     usedictionary = True
                     if writestr.startswith(">>"):
                         usedictionary = False
-                        writestr = writestr[2:]
+                        writestr = game.alignCenter(writestr[2:], glyphs)
                     strings[string] = lastgood = f.tell()
                     game.writeString(f, writestr, table, usedictionary and dictionary or {})
                     if "<ch1>" in writestr:

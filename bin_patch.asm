@@ -225,6 +225,18 @@
   bl STRLEN_DIV
 
 
+; Tweak character name positioning
+; Normally, this function returns an hardcoded value for every possible string length
+.org 0x0202c994  ; Until 0x0202ca38
+  .area 0xa4
+  bl STRLEN
+  add r0,r0,0x2b
+  str r0,[r4]
+  pop {pc,r4}
+  .endarea
+
+
+; Redirect processed strings pointer to a larger space
 .org 0x0202e544
   ; .dw 0x022E8876
   .dw REPLACE_PTR

@@ -6,6 +6,9 @@ mainptr = {"offset": 0x0b2ce0, "end": 0x13a3a8, "end2": 0x1ae1af}
 # Value for wordwrapping
 wordwrap = 160
 
+# Empty font glyphs used for aligning text. Sizes are 0, 1, 2, and so on
+alignglyphs = ["", "ｼ", " ", "ｽ", "ｾ", "ｿ", "ﾜ", "ｻ", "ｺ", "ｹ", "ｸ", "ｷ", "ｶ"]
+
 
 # Pointers to various strings, with "offset" and pointer "count"
 # If "main" is set to true, these are mixed in with normal text
@@ -190,6 +193,17 @@ popupcells = [
     {"width": 16, "height": 16, "x": 64, "y": 128},
 ]
 
+mgselcells = [
+    {"width": 32, "height": 64},
+    {"width": 16, "height": 64, "x": 32},
+    {"width": 32, "height": 64, "y": 64},
+    {"width": 16, "height": 64, "x": 32, "y": 64},
+    {"width": 32, "height": 32, "y": 128},
+    {"width": 16, "height": 32, "y": 128, "x": 32},
+    {"width": 32, "height": 16, "y": 160},
+    {"width": 16, "height": 16, "y": 160, "x": 32},
+]
+
 manualcells = {
     "ADV/003.ANCG": [
         {"cells": popupcells},
@@ -352,8 +366,34 @@ manualcells = {
                   ]},
         {"cells": [{"width": 32, "height": 32}], "repeat": 7},
     ],
-    # MG_SEL/002.ANCG ?
-    # MG_SEL/004.ANCG ?
+    "MG_SEL/002.ANCG": [
+        {"cells": [
+                    {"width": 64, "height": 64},
+                    {"width": 64, "height": 64, "x": 64},
+                    {"width": 64, "height": 64, "y": 64},
+                    {"width": 64, "height": 64, "x": 64, "y": 64},
+                    {"width": 64, "height": 64, "y": 128},
+                    {"width": 64, "height": 64, "x": 64, "y": 128},
+                  ]},
+        {"cells": mgselcells, "repeat": 4},
+    ],
+    "MG_SEL/004.ANCG": [
+        {"cells": mgselcells, "repeat": 4},
+        {"cells": mgselcells, "repeat": 5, "pal": 1},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 32, "height": 16, "y": 128},
+                  ], "repeat": 4},
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 32, "height": 16, "y": 128},
+                  ], "repeat": 5, "pal": 2},
+        {"cells": [
+                    {"width": 32, "height": 32},
+                  ], "repeat": 2, "pal": 6},
+    ],
     "MG1/012.ANCG": [
         {"cells": popupcells},
         {"cells": [{"width": 32, "height": 64}], "repeat": 3},

@@ -161,19 +161,36 @@ def writeDictionaryString(s, table):
 
 
 def alignLeft(s, glyphs, totlen=0x78):
-    alignglyphs = ["", "ｼ", " ", "ｽ", "ｾ", "ｿ", "ﾜ", "ｻ", "ｺ", "ｹ", "ｸ", "ｷ", "ｶ"]
     strlen = 0
     for c in s:
         strlen += glyphs[c].length if "c" in glyphs else 6
-    maxlen = len(alignglyphs) - 1
+    maxlen = len(constants.alignglyphs) - 1
     while strlen < totlen:
         if totlen - strlen >= maxlen:
-            s += alignglyphs[maxlen]
+            s += constants.alignglyphs[maxlen]
             strlen += maxlen
         else:
-            s += alignglyphs[totlen - strlen]
+            s += constants.alignglyphs[totlen - strlen]
             strlen = totlen
     return s
+
+
+def alignCenter(s, glyphs, align=6):
+    strlen = 0
+    for c in s:
+        strlen += glyphs[c].length if "c" in glyphs else 6
+    remainder = strlen % align
+    if remainder == 0:
+        return s
+    if remainder == 1:
+        return constants.alignglyphs[3] + s + constants.alignglyphs[2]
+    if remainder == 2:
+        return constants.alignglyphs[2] + s + constants.alignglyphs[2]
+    if remainder == 3:
+        return constants.alignglyphs[2] + s + constants.alignglyphs[1]
+    if remainder == 4:
+        return constants.alignglyphs[1] + s + constants.alignglyphs[1]
+    return constants.alignglyphs[1] + s
 
 
 def detectTextCode(s, i=0):
