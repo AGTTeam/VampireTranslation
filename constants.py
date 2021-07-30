@@ -229,7 +229,8 @@ manualcells = {
                     {"width": 16, "height": 64, "x": 32},
                     {"width": 32, "height": 32, "y": 64},
                     {"width": 16, "height": 32, "x": 32, "y": 64},
-                    {"width": 32, "height": 32, "y": 96},
+                    {"width": 32, "height": 16, "y": 96},
+                    {"width": 32, "height": 8,  "x": 32, "y": 96},
                   ], "repeat": 4},
     ],
     "CHAPT/006.ANCG": [
@@ -318,6 +319,14 @@ manualcells = {
         {"cells": popupcells},
         {"cells": [{"width": 32, "height": 64}], "repeat": 3},
     ],
+    "DATESL/008.ANCG": [
+        {"cells": [
+                    {"width": 32, "height": 64},
+                    {"width": 32, "height": 64, "y": 64},
+                    {"width": 32, "height": 64, "y": 128},
+                  ], "repeat": 7},
+        {"cells": [{"width": 8, "height": 112}], "repeat": 2},
+    ],
     "ENTRY/002.ANCG": [
         {"cells": [{"width": 64, "height": 64}, {"width": 64, "height": 64, "y": 64}], "repeat": 2},
         {"cells": [{"width": 16, "height": 64}, {"width": 16, "height": 64, "y": 64}]},
@@ -361,8 +370,8 @@ manualcells = {
         {"cells": [
                     {"width": 64, "height": 64},
                     {"width": 16, "height": 64, "x": 64},
-                    {"width": 32, "height": 16,  "y": 64},
-                    {"width": 32, "height": 16,  "x": 32, "y": 64},
+                    {"width": 32, "height": 16, "y": 64},
+                    {"width": 32, "height": 16, "x": 32, "y": 64},
                   ]},
         {"cells": [{"width": 32, "height": 32}], "repeat": 7},
     ],
