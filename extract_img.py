@@ -14,7 +14,6 @@ def run(data):
     lastmaps = []
     totfiles = 0
     for file in common.showProgress(files):
-        break
         with common.Stream(infolder + file, "rb") as f:
             common.logDebug("Extracting", file)
             # Read section offsets
