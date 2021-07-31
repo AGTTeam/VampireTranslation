@@ -85,7 +85,7 @@ datptrs = {
     "Items":          {"offset": 0x1c9690,   "end": 0x1c9c23, "dictionary": False},
     "Minigame":       {"offset": 0x1cd120, "count": 1},
     "Minigames":      {"offset": 0x1cd130, "count": 9},
-    "CharacterNames": {"offset": 0x1cde40, "count": 8,        "dictionary": False},
+    "CharacterNames": {"offset": 0x1cde40, "count": 8,        "dictionary": False, "aligncenter": 90},
     "AdditionalText": {"offset": 0x1cee84,   "end": 0x1d2be4, "wordwrap": wordwrap},
     "Prices":         {"offset": 0x1d3228, "count": 11},
     "ItemShop": [
@@ -388,7 +388,9 @@ manualcells = {
                     {"width": 64, "height": 64, "y": 128},
                     {"width": 64, "height": 64, "x": 64, "y": 128},
                   ]},
-        {"cells": mgselcells, "repeat": 4},
+        {"cells": mgselcells, "repeat": 4, "pal": 1},
+        {"cells": mgselcells, "repeat": 4, "pal": 2},
+        {"cells": mgselcells, "pal": 3},
     ],
     "MG_SEL/004.ANCG": [
         {"cells": mgselcells, "repeat": 4},
@@ -411,9 +413,25 @@ manualcells = {
         {"cells": popupcells},
         {"cells": [{"width": 32, "height": 64}], "repeat": 3},
     ],
-    # MG09/013.ANCG
+    "MG09/013.ANCG": [
+        {"cells": [
+                    {"width": 32, "height": 32},
+                    {"width": 16, "height": 32, "x": 32},
+                    {"width": 32, "height": 16, "y": 32},
+                    {"width": 16, "height": 16, "x": 32, "y": 32},
+                  ]},
+        {"cells": [{"width": 32, "height": 64}],  "pal": 2},
+        {"cells": [{"width": 32, "height": 112}], "pal": 3},
+        {"cells": [{"width": 32, "height": 64}],  "pal": 3},
+        {"cells": [{"width": 32, "height": 32}],  "pal": 4},
+        {"cells": [{"width": 16, "height": 192}], "pal": 5},
+    ],
     "V_GALLERY/004.ANCG": [
         {"cells": [{"width": 32, "height": 64}, {"width": 32, "height": 64, "y": 64}, {"width": 32, "height": 64, "y": 128}], "repeat": 8},
+    ],
+    "VKGM07/007.ANCG": [
+        {"cells": [{"width": 32, "height": 192}]},
+        {"cells": [{"width": 16, "height": 16}], "repeat": 10, "pal": 1},
     ],
     "WC/000.ANCG": [
         {"cells": [{"width": 64, "height": 64}], "pal": 0},
