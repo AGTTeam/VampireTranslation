@@ -193,6 +193,16 @@ def alignCenter(s, glyphs, align=6):
     return constants.alignglyphs[1] + s
 
 
+def alignCenterSpace(s, glyphs, align=108):
+    strlen = 0
+    for c in s:
+        strlen += glyphs[c].length if "c" in glyphs else 6
+    remainder = (align - strlen) // 6 // 2
+    if remainder > 0:
+        s = (constants.alignglyphs[6] * remainder) + s + (constants.alignglyphs[6] * remainder)
+    return s
+
+
 def detectTextCode(s, i=0):
     if s[i] == "<":
         return len(s[i:].split(">", 1)[0]) + 1

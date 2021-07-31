@@ -124,6 +124,7 @@ def run(data, copybin=False, analyze=False):
                         writegroups = "writegroups" in datptr and datptr["writegroups"]
                         usedictionary = "dictionary" in datptr and datptr["dictionary"]
                         wordwrap = "wordwrap" in datptr and datptr["wordwrap"] or 0
+                        aligncenter = "aligncenter" in datptr and datptr["aligncenter"] or 0
                         fin.seek(datptr["offset"])
                         if "end" in datptr:
                             while fin.tell() < datptr["end"]:
@@ -131,7 +132,7 @@ def run(data, copybin=False, analyze=False):
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
                                 allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
-                                                   "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap})
+                                                   "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap, "aligncenter": aligncenter})
                         else:
                             ptrs = []
                             for i in range(datptr["count"]):
@@ -143,7 +144,7 @@ def run(data, copybin=False, analyze=False):
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
                                 allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
-                                                   "ptrpos": ptrs[i]["pos"], "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap})
+                                                   "ptrpos": ptrs[i]["pos"], "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap, "aligncenter": aligncenter})
                     # Check how much space is used by these strings and update them with the translations
                     minpos = 0xffffffff
                     maxpos = 0
@@ -161,6 +162,10 @@ def run(data, copybin=False, analyze=False):
                                 jpstr["str"] = common.wordwrap(jpstr["str"], glyphs, jpstr["wordwrap"], game.detectTextCode, default=0xa)
                             if jpstr["str"].startswith("<<"):
                                 jpstr["str"] = game.alignLeft(jpstr["str"][2:], glyphs)
+                            if jpstr["str"].startswith(">>"):
+                                jpstr["str"] = game.alignCenter(jpstr["str"][2:], glyphs)
+                            if jpstr["aligncenter"] > 0:
+                                jpstr["str"] = game.alignCenterSpace(jpstr["str"], glyphs, jpstr["aligncenter"])
                     if analyze:
                         allspace = []
                         for i in range(minpos, maxpos + 1):
