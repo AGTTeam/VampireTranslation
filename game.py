@@ -199,7 +199,14 @@ def alignCenterSpace(s, glyphs, align=108):
         strlen += glyphs[c].length if "c" in glyphs else 6
     remainder = (align - strlen) // 6 // 2
     if remainder > 0:
-        s = (constants.alignglyphs[6] * remainder) + s + (constants.alignglyphs[6] * remainder)
+        spacing = constants.alignglyphs[6]
+        if remainder == 2:
+            spacing = constants.alignglyphs[12]
+        elif remainder == 3:
+            spacing += constants.alignglyphs[12]
+        elif remainder == 4:
+            spacing = constants.alignglyphs[12] + constants.alignglyphs[12]
+        s = spacing + s + spacing
     return s
 
 

@@ -5,7 +5,7 @@ import click
 from hacktools import common, nds
 import game
 
-version = "1.0.4"
+version = "1.0.5"
 data = "VampireData/"
 romfile = data + "vampire.nds"
 rompatch = data + "vampire_patched.nds"
@@ -71,7 +71,7 @@ def repack(no_rom, bin, fdt, img, bmp):
 @common.cli.command()
 @click.argument("text")
 def translate(text):
-    table, invtable = game.getTable(data)
+    table, _ = game.getTable(data)
     ret = ""
     group = 0
     for c in text:
