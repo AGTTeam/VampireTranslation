@@ -50,7 +50,7 @@ def run(data, copybin=False, analyze=False):
             outchars = 0
             lastgood = 0
             f.seek(constants.mainptr["offset"])
-            for string in strings:
+            for string in common.showProgress(strings):
                 writestr = string
                 if strings[string] == -1:
                     if "<ch1>" not in writestr:
@@ -67,7 +67,7 @@ def run(data, copybin=False, analyze=False):
                         usedictionary = False
                         writestr = game.alignCenter(writestr[2:], glyphs)
                     strings[string] = lastgood = f.tell()
-                    game.writeString(f, writestr, table, usedictionary and dictionary or {})
+                    game.writeString(f, writestr, table, usedictionary and dictionary or {}, compress=usedictionary)
                     if "<ch1>" in writestr:
                         f.writeByte(0)
                     if f.tell() >= constants.mainptr["end"]:
@@ -99,6 +99,11 @@ def run(data, copybin=False, analyze=False):
                         f.writeUInt(0x02000000 + strings[jpstr])
 
     common.logMessage("Done! Translation is at {0:.2f}%".format((100 * transtot) / chartot))
+    common.logMessage("Text statistics:")
+    common.logMessage(" Groups printed: {0}".format(game.text_stats_groups))
+    common.logMessage(" Characters printed: {0}".format(game.text_stats_other))
+    common.logMessage(" Dictionary saved: {0}-{1} overhead ({2}%)".format(game.text_stats_dict_saved, game.text_stats_dict_overhead, (game.text_stats_dict_overhead * 100) // game.text_stats_dict_saved))
+    common.logMessage(" Compression saved: {0}".format(game.text_stats_compression_saving))
 
     common.logMessage("Repacking DAT from", datfile, "...")
     chartot = transtot = 0

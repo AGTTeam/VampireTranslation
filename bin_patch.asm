@@ -2,16 +2,20 @@
 
 .open "VampireData/repack/arm9.bin",0x02000000
 
-; VWF
-.org 0x21c23c8
-.area 0x433,0  ; up to 0x021c27fb
+
+.org 0x21c282c
+.area 0x443,0  ; up to 0x021c2c6f
   FONT_DATA:
   .import "VampireData/font_data.bin"
   .align
   DICTIONARY_DATA:
   .include "VampireData/dictionary.asm"
   .align
+.endarea
 
+
+.org 0x21c23c8
+.area 0x433,0  ; up to 0x021c27fb
   ; r3 = width in pixels to copy from the font
   ; r4 = the pixel width of the character
   ; r11 = pointer to the current offset in the string (+1)
@@ -54,6 +58,7 @@
   b VWF_RETURN
   .pool
 
+
   DICTIONARY_DAT:
   cmp r1,0x1
   bne @@ret
@@ -78,22 +83,84 @@
   cmp r1,0x9
   b DICTIONARY_DAT_RETURN
 
+
   DICTIONARY:
+  @@read_text_byte equ 0x0202cd50
   ; Check if r0 is <= 0xa
   cmp r0,0xa
   ble DICTIONARY_RETURN
   ; Get the output string pointer
   add r1,sp,0x40
   ; Get the current offset in the output string
+  ; Do this before pushing registers on the stack
   ldrsh r2,[sp,0x28]
+  ; Check if we're dealing with a compressed string, bit 7 is set
+  cmp r0,0x80
+  bge @@compression
   ; Call the dictionary function
   bl DICTIONARY_FUNC
+  b @@ret
+
+  @@compression:
+  @@addregs equ 4*4
+  push {r3-r6}
+  ; Drop the check bit, this is the length we need to copy
+  and r4,r0,0x7f
+  ; Read 2 bytes
+  add r0,sp,0x3c+@@addregs
+  add r1,sp,0x38+@@addregs
+  bl @@read_text_byte
+  mov r5,r0
+  add r0,sp,0x3c+@@addregs
+  add r1,sp,0x38+@@addregs
+  bl @@read_text_byte
+  lsl r6,r0,0x8
+  orr r5,r6,r5
+  ; Setup other registers
+  add r1,sp,0x40+@@addregs
+  ldrsh r2,[sp,0x28+@@addregs]
+  ; Set r5 to the actual offset
+  add r6,sp,0x3c+@@addregs
+  ldr r6,[r6]
+  sub r5,r6,r5
+  ; r1 = output string pointer
+  ; r2 = current offset in the output string
+  ; r4 = length to copy
+  ; r5 = input pointer
+  @@loop:
+  cmp r4,0x0
+  ble @@end
+  ; Read one byte
+  sub r4,r4,0x1
+  ldrb r0,[r5]
+  add r5,r5,0x1
+  ; Check if it's a dictionary entry
+  cmp r0,0x1
+  beq @@dict
+  ; Store it in the output string
+  strb r0,[r1,r2]
+  add r2,r2,0x1
+  b @@loop
+  @@dict:
+  ; Read dictionary entry
+  ldrb r0,[r5]
+  add r5,r5,0x1
+  sub r4,r4,0x1
+  bl DICTIONARY_FUNC
+  mov r2,r0
+  b @@loop
+  @@end:
+  mov r0,r2
+  pop {r3-r6}
+
+  @@ret:
   ; Store the new offset
   strh r0,[sp,0x28]
   ; Return to normal execution
   mov r0,0xb
   cmp r0,0xa
   b DICTIONARY_NORMAL
+
 
   ; r0 = dictionary entry
   ; r1 = output string pointer
@@ -119,49 +186,6 @@
   b @@loop
   @@ret:
   pop {pc,r3-r4}
-  .pool
-
-  STRLEN_DIV:
-  push {lr,r1}
-  bl STRLEN
-  ; Divide by 6: ((x * 0xaaab) >> 0x10) >> 0x2
-  ldr r1,=0xaaab
-  mul r0,r0,r1
-  lsr r0,r0,0x10
-  lsr r0,r0,0x2
-  pop {pc,r1}
-  .pool
-
-  STRLEN:
-  push {lr,r1-r4}
-  ldr r1,=FONT_DATA
-  mov r3,0x0
-  mov r4,0x0
-  ; Add the font width in r4
-  @@loop:
-  ldrb r2,[r0],0x1
-  cmp r2,0x0
-  beq @@end
-  ; Check if this is a group
-  cmp r2,0x90
-  movge r3,r2
-  bge @@loop
-  ; If this isn't group 0x90, just add a fixed value
-  cmp r3,0x91
-  addeq r4,r4,6
-  beq @@loop
-  addgt r4,r4,12
-  bgt @@loop
-  ; Get the character width
-  add r2,r1,r2
-  sub r2,r2,0x10
-  ldrb r2,[r2]
-  add r4,r4,r2
-  b @@loop
-  @@end:
-  ; Return
-  mov r0,r4
-  pop {pc,r1-r4}
   .pool
 .endarea
 
@@ -233,6 +257,49 @@
   add r0,r0,0x2b
   str r0,[r4]
   pop {pc,r4}
+
+  STRLEN_DIV:
+  push {lr,r1}
+  bl STRLEN
+  ; Divide by 6: ((x * 0xaaab) >> 0x10) >> 0x2
+  ldr r1,=0xaaab
+  mul r0,r0,r1
+  lsr r0,r0,0x10
+  lsr r0,r0,0x2
+  pop {pc,r1}
+  .pool
+
+  STRLEN:
+  push {lr,r1-r4}
+  ldr r1,=FONT_DATA
+  mov r3,0x0
+  mov r4,0x0
+  ; Add the font width in r4
+  @@loop:
+  ldrb r2,[r0],0x1
+  cmp r2,0x0
+  beq @@end
+  ; Check if this is a group
+  cmp r2,0x90
+  movge r3,r2
+  bge @@loop
+  ; If this isn't group 0x90, just add a fixed value
+  cmp r3,0x91
+  addeq r4,r4,6
+  beq @@loop
+  addgt r4,r4,12
+  bgt @@loop
+  ; Get the character width
+  add r2,r1,r2
+  sub r2,r2,0x10
+  ldrb r2,[r2]
+  add r4,r4,r2
+  b @@loop
+  @@end:
+  ; Return
+  mov r0,r4
+  pop {pc,r1-r4}
+  .pool
   .endarea
 
 
@@ -250,6 +317,113 @@
 ; Redirect some error codes
 ERROR_PTR equ 0x021c2394
 UNKNOWN_PTR equ 0x021c3010
+.org 0x02057ec4
+  .dw ERROR_PTR
+.org 0x02058118
+  .dw ERROR_PTR
+.org 0x0205811c
+  .dw ERROR_PTR
+.org 0x02058120
+  .dw ERROR_PTR
+.org 0x02058124
+  .dw ERROR_PTR
+.org 0x02058190
+  .dw ERROR_PTR
+.org 0x02058194
+  .dw ERROR_PTR
+.org 0x02058198
+  .dw ERROR_PTR
+.org 0x0205819c
+  .dw ERROR_PTR
+.org 0x0205820c
+  .dw ERROR_PTR
+.org 0x02058210
+  .dw ERROR_PTR
+.org 0x02058214
+  .dw ERROR_PTR
+.org 0x02058218
+  .dw ERROR_PTR
+.org 0x0205829c
+  .dw ERROR_PTR
+.org 0x020582a0
+  .dw ERROR_PTR
+.org 0x020582a4
+  .dw ERROR_PTR
+.org 0x020582a8
+  .dw ERROR_PTR
+.org 0x02058350
+  .dw ERROR_PTR
+.org 0x02058354
+  .dw ERROR_PTR
+.org 0x02058358
+  .dw ERROR_PTR
+.org 0x0205835c
+  .dw ERROR_PTR
+.org 0x02058514
+  .dw ERROR_PTR
+.org 0x02058518
+  .dw ERROR_PTR
+.org 0x0205851c
+  .dw ERROR_PTR
+.org 0x02058520
+  .dw ERROR_PTR
+.org 0x02058524
+  .dw ERROR_PTR
+.org 0x02058528
+  .dw ERROR_PTR
+.org 0x020586a8
+  .dw ERROR_PTR
+.org 0x020586ac
+  .dw ERROR_PTR
+.org 0x020586b0
+  .dw ERROR_PTR
+.org 0x020586b4
+  .dw ERROR_PTR
+.org 0x02058874
+  .dw ERROR_PTR
+.org 0x02058878
+  .dw ERROR_PTR
+.org 0x0205887c
+  .dw ERROR_PTR
+.org 0x02058880
+  .dw ERROR_PTR
+.org 0x02058884
+  .dw ERROR_PTR
+.org 0x02058888
+  .dw ERROR_PTR
+.org 0x020589a8
+  .dw ERROR_PTR
+.org 0x020589ac
+  .dw ERROR_PTR
+.org 0x020589b0
+  .dw ERROR_PTR
+.org 0x020589b4
+  .dw ERROR_PTR
+.org 0x02058a20
+  .dw ERROR_PTR
+.org 0x02058a24
+  .dw ERROR_PTR
+.org 0x02058a28
+  .dw ERROR_PTR
+.org 0x02058a2c
+  .dw ERROR_PTR
+.org 0x02058a98
+  .dw ERROR_PTR
+.org 0x02058a9c
+  .dw ERROR_PTR
+.org 0x02058aa0
+  .dw ERROR_PTR
+.org 0x02058aa4
+  .dw ERROR_PTR
+.org 0x02058b10
+  .dw ERROR_PTR
+.org 0x02058b14
+  .dw ERROR_PTR
+.org 0x02058b18
+  .dw ERROR_PTR
+.org 0x02058b1c
+  .dw ERROR_PTR
+
 .org 0x02055f30
   .dw ERROR_PTR
 .org 0x02055f38

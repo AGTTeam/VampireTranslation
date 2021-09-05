@@ -62,7 +62,15 @@ def formatString(str):
     return str
 
 
-def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False):
+text_stats_dict_overhead = 0
+text_stats_dict_saved = 0
+text_stats_groups = 0
+text_stats_other = 0
+text_stats_compression_saving = 0
+
+
+def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compress=False):
+    global text_stats_dict_overhead, text_stats_dict_saved, text_stats_groups, text_stats_other, text_stats_compression_saving
     s = s.replace("<ch1>", "<ch1>_")
     s = s.replace("<ch2>", "<ch2>_")
     s = s.replace("<ch3>", "<ch3>_")
@@ -71,8 +79,11 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False):
     for stringcode in constants.stringcodes:
         s = s.replace(constants.stringcodes[stringcode], stringcode)
     x = 0
+    # Write the string to a temporary memory stream
+    tf = common.Stream().__enter__()
     while x < len(s):
         if not writegroups:
+            # Loop the dictionary entries to find if we can match one
             for dictentry in dictionary:
                 check = s[x:x+len(dictentry)]
                 if check == dictentry:
@@ -82,11 +93,13 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False):
                     if maxlen != -1 and totlen + addlen > maxlen:
                         common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                         break
-                    # common.logDebug("Writing dictionary entry", dictentry, "at", common.toHex(f.tell()), addlen)
                     if addlen > 2:
-                        f.writeByte(0x90)
-                    f.writeByte(0x1)
-                    f.writeByte(dictionary[dictentry])
+                        tf.writeByte(0x90)
+                        text_stats_dict_overhead += 1
+                    tf.writeByte(0x1)
+                    tf.writeByte(dictionary[dictentry])
+                    text_stats_dict_overhead += 2
+                    text_stats_dict_saved += len(dictentry)
                     totlen += addlen
                     x += len(dictentry)
                     continue
@@ -96,7 +109,7 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False):
             if maxlen != -1 and totlen + 1 > maxlen:
                 common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                 break
-            f.writeByte(0xa)
+            tf.writeByte(0xa)
             totlen += 1
         elif c == "_":
             group = 0
@@ -105,7 +118,7 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False):
                 common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                 break
             code = s[x] + s[x+1]
-            f.write(bytes.fromhex(code))
+            tf.write(bytes.fromhex(code))
             x += 3
             totlen += 1
         else:
@@ -126,15 +139,56 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False):
                         common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                         break
                     group = chargroup
-                    f.writeByte(group)
-                    f.writeByte(charcode & 0xff)
+                    tf.writeByte(group)
+                    text_stats_groups += 1
+                    tf.writeByte(charcode & 0xff)
+                    text_stats_other += 1
                     totlen += 2
                 else:
                     if maxlen != -1 and totlen + 1 > maxlen:
                         common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
                         break
-                    f.writeByte(charcode & 0xff)
+                    tf.writeByte(charcode & 0xff)
+                    text_stats_other += 1
                     totlen += 1
+    stringlen = tf.tell()
+    tf.seek(0)
+    if not compress or "<" in s:
+        f.write(tf.read())
+        f.writeByte(0)
+        return
+    # Check how much we can save with compression
+    stringbytes = tf.read()
+    tf.seek(0)
+    f.writeByte(stringbytes[0])
+    x = 1
+    while x < stringlen:
+        saving = 0
+        f.seek(-65530, 1)
+        checkbytes = f.read(65530)
+        for i in range(stringlen - x):
+            # Grab a piece
+            searchfor = stringbytes[x:stringlen - x - i]
+            if len(searchfor) > 127 or len(searchfor) < 5 or searchfor[len(searchfor)-1] == 0x1:
+                continue
+            # Search for it
+            foundat = checkbytes.find(searchfor)
+            if foundat >= 0:
+                text_stats_compression_saving += len(searchfor) - 4
+                saving = len(searchfor)
+                # common.logMessage("Writing at ", f.tell(), " for bytes ", searchfor)
+                f.writeByte(0x1)
+                f.writeByte(saving | (1 << 7))
+                f.writeUShort(65530 + 4 - foundat)
+                break
+        if saving > 0:
+            x += saving
+        else:
+            f.writeByte(stringbytes[x])
+            x += 1
+            if x < stringlen and stringbytes[x-1] == 0x1:
+                f.writeByte(stringbytes[x])
+                x += 1
     f.writeByte(0)
 
 
