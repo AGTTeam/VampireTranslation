@@ -139,6 +139,7 @@
   beq @@dict
   ; Store it in the output string
   strb r0,[r1,r2]
+  add r9,r9,0x1
   add r2,r2,0x1
   b @@loop
   @@dict:
@@ -148,6 +149,7 @@
   sub r4,r4,0x1
   bl DICTIONARY_FUNC
   mov r2,r0
+  mov r9,r0
   b @@loop
   @@end:
   mov r0,r2

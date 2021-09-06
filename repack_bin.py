@@ -65,7 +65,7 @@ def run(data, copybin=False, analyze=False):
                     usedictionary = True
                     if writestr.startswith(">>"):
                         usedictionary = False
-                        writestr = game.alignCenter(writestr[2:], glyphs)
+                        writestr = game.alignCenter(writestr[2:], glyphs) + "<00>"
                     strings[string] = lastgood = f.tell()
                     game.writeString(f, writestr, table, usedictionary and dictionary or {}, compress=usedictionary)
                     if "<ch1>" in writestr:
@@ -168,7 +168,7 @@ def run(data, copybin=False, analyze=False):
                             if jpstr["str"].startswith("<<"):
                                 jpstr["str"] = game.alignLeft(jpstr["str"][2:], glyphs)
                             if jpstr["str"].startswith(">>"):
-                                jpstr["str"] = game.alignCenter(jpstr["str"][2:], glyphs)
+                                jpstr["str"] = game.alignCenter(jpstr["str"][2:], glyphs) + "<00>"
                             if jpstr["aligncenter"] > 0:
                                 jpstr["str"] = game.alignCenterSpace(jpstr["str"], glyphs, jpstr["aligncenter"])
                     if analyze:

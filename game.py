@@ -161,7 +161,7 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
     stringbytes = tf.read()
     tf.seek(0)
     f.writeByte(stringbytes[0])
-    x = 1
+    x = 0
     while x < stringlen:
         saving = 0
         f.seek(-65530, 1)
