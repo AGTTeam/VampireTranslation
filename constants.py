@@ -7,7 +7,10 @@ mainptr = {"offset": 0x0b2ce0, "end": 0x13a3a8, "end2": 0x1ae1af}
 wordwrap = 160
 
 # Empty font glyphs used for aligning text. Sizes are 0, 1, 2, and so on
-alignglyphs = ["", "ｼ", " ", "ｽ", "ｾ", "ｿ", "ﾜ", "ｻ", "ｺ", "ｹ", "ｸ", "ｷ", "ｶ"]
+alignglyphs = ["", "ｼ", " ", "ｽ", "ｾ", "ｿ", "ﾜ", "ｻ", "ｺ", "ｹ", "ｸ", "ｷ", "ｶ",
+                   "",  "",  "",  "",  "",  "",  "",  "",  "",  "",  "", "ｵ",
+                   "",  "",  "",  "",  "",  "",  "",  "",  "",  "",  "", "ｴ",
+                   "",  "",  "",  "",  "",  "",  "",  "",  "",  "",  "", "ｳ"]
 
 
 # Pointers to various strings, with "offset" and pointer "count"
@@ -89,6 +92,7 @@ datptrs = {
     "AdditionalText": {"offset": 0x1cee84,   "end": 0x1d2be4, "wordwrap": wordwrap},
     "Prices":         {"offset": 0x1d3228, "count": 11},
     "ItemShop": [
+                      {"offset": 0x1d3218, "count": 4},
                       {"offset": 0x1d3314, "count": 1},
                       {"offset": 0x1d331c, "count": 1},
                       {"offset": 0x1d3328, "count": 3},

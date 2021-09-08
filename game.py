@@ -160,7 +160,6 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
     # Check how much we can save with compression
     stringbytes = tf.read()
     tf.seek(0)
-    f.writeByte(stringbytes[0])
     x = 0
     while x < stringlen:
         saving = 0
@@ -224,8 +223,11 @@ def alignLeft(s, glyphs, totlen=0x78):
             s += constants.alignglyphs[maxlen]
             strlen += maxlen
         else:
-            s += constants.alignglyphs[totlen - strlen]
-            strlen = totlen
+            for i in range(totlen - strlen, 0, -1):
+                if constants.alignglyphs[i] != "":
+                    s += constants.alignglyphs[i]
+                    strlen += i
+                    break
     return s
 
 

@@ -61,11 +61,11 @@ def run(data, copybin=False, analyze=False):
                     outchars += len(writestr) - writestr.count("<") * 3
                     strings[string] = lastgood
                 else:
-                    common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
                     usedictionary = True
                     if writestr.startswith(">>"):
                         usedictionary = False
                         writestr = game.alignCenter(writestr[2:], glyphs) + "<00>"
+                    common.logDebug("Writing string", writestr, "at", common.toHex(f.tell()))
                     strings[string] = lastgood = f.tell()
                     game.writeString(f, writestr, table, usedictionary and dictionary or {}, compress=usedictionary)
                     if "<ch1>" in writestr:
@@ -170,7 +170,7 @@ def run(data, copybin=False, analyze=False):
                             if jpstr["str"].startswith(">>"):
                                 jpstr["str"] = game.alignCenter(jpstr["str"][2:], glyphs) + "<00>"
                             if jpstr["aligncenter"] > 0:
-                                jpstr["str"] = game.alignCenterSpace(jpstr["str"], glyphs, jpstr["aligncenter"])
+                                jpstr["str"] = game.alignCenterSpace(jpstr["str"], glyphs, jpstr["aligncenter"]) + "<00>"
                     if analyze:
                         allspace = []
                         for i in range(minpos, maxpos + 1):

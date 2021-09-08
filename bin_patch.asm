@@ -191,13 +191,38 @@
   .pool
 .endarea
 
+; Edit the function that copies the hardcoded name to handle variable length names
+; Always add a space
+.org 0x0202c8e0
+  ; cmp r2,0x6
+  cmp r2,0xff
+; Put a normal space instead of a wide one
+.org 0x0202c924
+  mov r1,0x90
+  strb r1,[r0,r12]
+  mov r1,0x10
+; Get the correct byte for the 2nd part of the name
+.org 0x0202c940
+  ; ldrsb r1,[r1,0x7]
+  ldrsb r1,[r1,0x10]
+
 .org 0x021c3018
 .area 0x1bf,0  ; up to 0x021c31d7
   .align
   REPLACE_PTR:
   .area 0x100,0
   .endarea
+  NAME_PTR1:
+  .area 0x10,0
+  .endarea
+  NAME_PTR2:
+  .area 0x10,0
+  .endarea
 .endarea
+
+; Don't execute this code after loading the names, it's not needed and limits them to a length of 7
+.org 0x0203b4f8
+  pop {r3-r5,pc}
 
 ; Jump to custom code from the text rendering function
 .org 0x0203c860
@@ -315,6 +340,36 @@
 .org 0x02039b14
   ; .dw 0x022E8876
   .dw REPLACE_PTR
+
+
+; Redirect name pointers to a larger space
+.org 0x0202c970
+  .dw NAME_PTR1
+.org 0x0202e528
+  .dw NAME_PTR1
+.org 0x0203b67c
+  .dw NAME_PTR1
+.org 0x0203bedc ;?
+  .dw NAME_PTR1
+.org 0x0203c1e8 ;?
+  .dw NAME_PTR1
+.org 0x020433d0 ;?
+  .dw NAME_PTR1
+.org 0x020440b4 ;also change the ldrsb 0x7?
+  .dw NAME_PTR1
+.org 0x0204477c
+  .dw NAME_PTR1
+
+.org 0x0202c974
+  .dw NAME_PTR2
+.org 0x0202e524
+  .dw NAME_PTR2
+.org 0x0203b680
+  .dw NAME_PTR2
+.org 0x020433d4
+  .dw NAME_PTR2
+.org 0x0204478c
+  .dw NAME_PTR2
 
 ; Redirect some error codes
 ERROR_PTR equ 0x021c2394
