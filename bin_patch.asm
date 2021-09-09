@@ -202,9 +202,9 @@
   strb r1,[r0,r12]
   mov r1,0x10
 ; Get the correct byte for the 2nd part of the name
-.org 0x0202c940
+;.org 0x0202c940
   ; ldrsb r1,[r1,0x7]
-  ldrsb r1,[r1,0x10]
+  ;ldrsb r1,[r1,0x10]
 
 .org 0x021c3018
 .area 0x1bf,0  ; up to 0x021c31d7
@@ -341,7 +341,7 @@
   ; .dw 0x022E8876
   .dw REPLACE_PTR
 
-
+/*
 ; Redirect name pointers to a larger space
 .org 0x0202c970
   .dw NAME_PTR1
@@ -370,6 +370,7 @@
   .dw NAME_PTR2
 .org 0x0204478c
   .dw NAME_PTR2
+*/
 
 ; Redirect some error codes
 ERROR_PTR equ 0x021c2394
