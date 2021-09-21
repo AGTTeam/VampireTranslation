@@ -231,7 +231,7 @@ def alignLeft(s, glyphs, totlen=0x78):
     return s
 
 
-def alignCenter(s, glyphs, align=6):
+def alignCenter(s, glyphs, align=12):
     strlen = 0
     for c in s:
         strlen += glyphs[c].length if "c" in glyphs else 6
@@ -239,12 +239,26 @@ def alignCenter(s, glyphs, align=6):
     if remainder == 0:
         return s
     if remainder == 1:
-        return constants.alignglyphs[3] + s + constants.alignglyphs[2]
+        return constants.alignglyphs[6] + s + constants.alignglyphs[6]
     if remainder == 2:
-        return constants.alignglyphs[2] + s + constants.alignglyphs[2]
+        return constants.alignglyphs[6] + s + constants.alignglyphs[5]
     if remainder == 3:
-        return constants.alignglyphs[2] + s + constants.alignglyphs[1]
+        return constants.alignglyphs[5] + s + constants.alignglyphs[5]
     if remainder == 4:
+        return constants.alignglyphs[5] + s + constants.alignglyphs[4]
+    if remainder == 5:
+        return constants.alignglyphs[4] + s + constants.alignglyphs[4]
+    if remainder == 6:
+        return constants.alignglyphs[4] + s + constants.alignglyphs[3]
+    if remainder == 7:
+        return constants.alignglyphs[3] + s + constants.alignglyphs[3]
+    if remainder == 8:
+        return constants.alignglyphs[3] + s + constants.alignglyphs[2]
+    if remainder == 9:
+        return constants.alignglyphs[2] + s + constants.alignglyphs[2]
+    if remainder == 10:
+        return constants.alignglyphs[2] + s + constants.alignglyphs[1]
+    if remainder == 11:
         return constants.alignglyphs[1] + s + constants.alignglyphs[1]
     return constants.alignglyphs[1] + s
 

@@ -52,10 +52,9 @@ def run(data, copybin=False, analyze=False):
             f.seek(constants.mainptr["offset"])
             for string in common.showProgress(strings):
                 writestr = string
-                if strings[string] == -1:
-                    if "<ch1>" not in writestr:
-                        writestr = writestr.replace("<0A>", "|")
-                        writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
+                if strings[string] == -1 and not writestr.startswith(">>") and "<ch1>" not in writestr and "<00>" not in writestr:
+                    writestr = writestr.replace("<0A>", "|")
+                    writestr = common.wordwrap(writestr, glyphs, constants.wordwrap, game.detectTextCode, default=0xa)
                 if outofspace:
                     common.logDebug("Skipping string", writestr)
                     outchars += len(writestr) - writestr.count("<") * 3
