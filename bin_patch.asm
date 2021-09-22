@@ -278,12 +278,21 @@
 
 ; Tweak character name positioning
 ; Normally, this function returns an hardcoded value for every possible string length
-.org 0x0202c994  ; Until 0x0202ca38
-  .area 0xa4
+.org 0x202c980  ; Until 0x0202ca38
+  .area 0xb8
+  push {lr,r1,r4}
+  mov r4,r1
+  cmp r0,0x0
+  cmpne r4,0x0
+  popeq {pc,r1,r4}
   bl STRLEN
+  mov r1,r0
+  lsr r1,r1,0x6
+  lsl r1,r1,0x1
   add r0,r0,0x2b
+  sub r0,r0,r1
   str r0,[r4]
-  pop {pc,r4}
+  pop {pc,r1,r4}
 
   STRLEN_DIV:
   push {lr,r1}
@@ -299,7 +308,7 @@
   STRLEN:
   push {lr,r1-r4}
   ldr r1,=FONT_DATA
-  mov r3,0x0
+  mov r3,0x90
   mov r4,0x0
   ; Add the font width in r4
   @@loop:
