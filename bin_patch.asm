@@ -287,7 +287,7 @@
   popeq {pc,r1,r4}
   bl STRLEN
   mov r1,r0
-  lsr r1,r1,0x6
+  lsr r1,r1,0x12
   lsl r1,r1,0x1
   add r0,r0,0x2b
   sub r0,r0,r1
