@@ -16,11 +16,28 @@
 
 .org 0x21c23c8
 .area 0x433,0  ; up to 0x021c27fb
+  LAST_STR_POINTER_DATA:
+  .dw 0
   ; r3 = width in pixels to copy from the font
   ; r4 = the pixel width of the character
   ; r11 = pointer to the current offset in the string (+1)
   VWF_FUNC:
-  push {r0-r1}
+  push {r0-r2}
+  ; Check if we are in the name setup screen
+  ldr r0,=0x021b8b80
+  ldr r1,=0x021b8c54
+  ldr r2,=LAST_STR_POINTER_DATA
+  ldr r0,[r0]
+  ldr r1,[r1]
+  ldr r2,[r2]
+  cmp r2,r0
+  blt @@normal
+  cmp r2,r1
+  bge @@normal
+  mov r3,0xa
+  mov r4,0x10
+  b @@ret
+  @@normal:
   ; Go back and look for the character group
   mov r0,r11
   sub r0,r0,1
@@ -53,7 +70,7 @@
   mov r3,r0
   mov r4,r0
   @@ret:
-  pop {r0-r1}
+  pop {r0-r2}
   sub r1,r6,r8
   b VWF_RETURN
   .pool
@@ -189,6 +206,40 @@
   @@ret:
   pop {pc,r3-r4}
   .pool
+
+  LAST_STR_POINTER:
+  ldr r0,=LAST_STR_POINTER_DATA
+  str r5,[r0]
+  mov r0,0xd3
+  b LAST_STR_POINTER_RET
+  .pool
+
+  LAST_STR_POINTER2:
+  ldr r5,[r1]
+  ldr r1,=LAST_STR_POINTER_DATA
+  str r5,[r1]
+  b LAST_STR_POINTER2_RET
+  .pool
+
+  CLEAR_LAST_STR_POINTER:
+  push {r0-r1}
+  ldr r0,=LAST_STR_POINTER_DATA
+  mov r1,0x0
+  str r1,[r0]
+  pop {r0-r1}
+  add sp,sp,0xc
+  b CLEAR_LAST_STR_POINTER_RET
+  .pool
+
+  RETURN_HARDCODED_NAME1:
+  ldr r0,=HARDCODED_NAME1
+  bx lr
+  .pool
+
+  RETURN_HARDCODED_NAME2:
+  ldr r0,=HARDCODED_NAME2
+  bx lr
+  .pool
 .endarea
 
 ; Edit the function that copies the hardcoded name to handle variable length names
@@ -212,13 +263,27 @@
   REPLACE_PTR:
   .area 0x100,0
   .endarea
-  NAME_PTR1:
-  .area 0x10,0
-  .endarea
-  NAME_PTR2:
-  .area 0x10,0
-  .endarea
+  .align
+  HARDCODED_NAME1:
+  .db 0x94 :: .db 0x63 :: .db 0x94 :: .db 0x5a :: .db 0x0 :: .db 0x0 :: .db 0x0 :: .db 0x0
+  .align
+  HARDCODED_NAME2:
+  .db 0xa0 :: .db 0x12 :: .db 0x94 :: .db 0x5b :: .db 0x0 :: .db 0x0 :: .db 0x0 :: .db 0x0
 .endarea
+
+; Change the function that gets the player name to an hardcoded one
+.org 0x0202c8dc
+  ldr r3,=0x020ac210
+  ldr r3,[r3]
+.org 0x0202c910
+  b 0x0202c960
+  .pool
+
+; Also change the function that writes it in the empty save
+.org 0x0203b4c0
+  bl RETURN_HARDCODED_NAME1
+.org 0x0203b4d4
+  bl RETURN_HARDCODED_NAME2
 
 ; Don't execute this code after loading the names, it's not needed and limits them to a length of 7
 .org 0x0203b4f8
@@ -250,6 +315,21 @@
 .org 0x0203cf04
   DICTIONARY_DAT_NORMAL:
 
+; Store/clear the last pointer to the start of the
+; string we're drawing, to compare later and have
+; the correct spacing in the name input screen
+.org 0x02043478
+  ; mov r0,0xd3
+  b LAST_STR_POINTER
+  LAST_STR_POINTER_RET:
+.org 0x02043650
+  ; ldr r5,[r1]
+  b LAST_STR_POINTER2
+  LAST_STR_POINTER2_RET:
+.org 0x02043710
+  ; add sp,sp,0xc
+  b CLEAR_LAST_STR_POINTER
+  CLEAR_LAST_STR_POINTER_RET:
 
 ; Replace strlen calls with our custom one
 ; 0x0203c9b8
@@ -349,37 +429,6 @@
 .org 0x02039b14
   ; .dw 0x022E8876
   .dw REPLACE_PTR
-
-/*
-; Redirect name pointers to a larger space
-.org 0x0202c970
-  .dw NAME_PTR1
-.org 0x0202e528
-  .dw NAME_PTR1
-.org 0x0203b67c
-  .dw NAME_PTR1
-.org 0x0203bedc ;?
-  .dw NAME_PTR1
-.org 0x0203c1e8 ;?
-  .dw NAME_PTR1
-.org 0x020433d0 ;?
-  .dw NAME_PTR1
-.org 0x020440b4 ;also change the ldrsb 0x7?
-  .dw NAME_PTR1
-.org 0x0204477c
-  .dw NAME_PTR1
-
-.org 0x0202c974
-  .dw NAME_PTR2
-.org 0x0202e524
-  .dw NAME_PTR2
-.org 0x0203b680
-  .dw NAME_PTR2
-.org 0x020433d4
-  .dw NAME_PTR2
-.org 0x0204478c
-  .dw NAME_PTR2
-*/
 
 ; Redirect some error codes
 ERROR_PTR equ 0x021c2394
