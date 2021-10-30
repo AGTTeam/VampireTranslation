@@ -240,6 +240,12 @@
   ldr r0,=HARDCODED_NAME2
   bx lr
   .pool
+
+  SET_HARDCODED_NAME:
+  ldr r3,=0x020ac210
+  ldr r3,[r3]
+  b SET_HARDCODED_NAME_RET
+  .pool
 .endarea
 
 ; Edit the function that copies the hardcoded name to handle variable length names
@@ -273,11 +279,11 @@
 
 ; Change the function that gets the player name to an hardcoded one
 .org 0x0202c8dc
-  ldr r3,=0x020ac210
-  ldr r3,[r3]
+  b SET_HARDCODED_NAME
+  SET_HARDCODED_NAME_RET:
+; Jump to the end of the function
 .org 0x0202c910
   b 0x0202c960
-  .pool
 
 ; Also change the function that writes it in the empty save
 .org 0x0203b4c0
@@ -285,8 +291,14 @@
 .org 0x0203b4d4
   bl RETURN_HARDCODED_NAME2
 
+; Change an hardcoded position for the player name used in some minigames
+.org 0x0208d96c
+  ; mov r3,0x69
+  mov r3,0x24
+
 ; Don't execute this code after loading the names, it's not needed and limits them to a length of 7
 .org 0x0203b4f8
+  ; ldr r3,=0x0203b67c
   pop {r3-r5,pc}
 
 ; Jump to custom code from the text rendering function
