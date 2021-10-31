@@ -69,11 +69,12 @@ text_stats_other = 0
 text_stats_compression_saving = 0
 
 
-def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compress=False):
+def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compress=False, checkfit=False):
     global text_stats_dict_overhead, text_stats_dict_saved, text_stats_groups, text_stats_other, text_stats_compression_saving
     s = s.replace("<ch1>", "<ch1>_")
     s = s.replace("<ch2>", "<ch2>_")
     s = s.replace("<ch3>", "<ch3>_")
+    doesntfit = False
     group = 0
     totlen = 0
     for stringcode in constants.stringcodes:
@@ -91,7 +92,9 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
                     if group != 0x90:
                         addlen += 1
                     if maxlen != -1 and totlen + addlen > maxlen:
-                        common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        if not checkfit:
+                            common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        doesntfit = True
                         break
                     if addlen > 2:
                         tf.writeByte(0x90)
@@ -107,7 +110,9 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
         x += 1
         if c == "|":
             if maxlen != -1 and totlen + 1 > maxlen:
-                common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                if not checkfit:
+                    common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                doesntfit = True
                 break
             tf.writeByte(0xa)
             totlen += 1
@@ -115,7 +120,9 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
             group = 0
         elif c == "<":
             if maxlen != -1 and totlen + 1 > maxlen:
-                common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                if not checkfit:
+                    common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                doesntfit = True
                 break
             code = s[x] + s[x+1]
             tf.write(bytes.fromhex(code))
@@ -136,7 +143,9 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
                 chargroup = charcode >> 8
                 if group != chargroup or writegroups:
                     if maxlen != -1 and totlen + 2 > maxlen:
-                        common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        if not checkfit:
+                            common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        doesntfit = True
                         break
                     group = chargroup
                     tf.writeByte(group)
@@ -146,7 +155,9 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
                     totlen += 2
                 else:
                     if maxlen != -1 and totlen + 1 > maxlen:
-                        common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        if not checkfit:
+                            common.logError("String", s, "is too long (" + str(x) + "/" + str(len(s)) + ")")
+                        doesntfit = True
                         break
                     tf.writeByte(charcode & 0xff)
                     text_stats_other += 1
@@ -156,7 +167,7 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
     if not compress or "<" in s:
         f.write(tf.read())
         f.writeByte(0)
-        return
+        return not doesntfit
     # Check how much we can save with compression
     stringbytes = tf.read()
     tf.seek(0)
@@ -189,6 +200,7 @@ def writeString(f, s, table, dictionary={}, maxlen=-1, writegroups=False, compre
                 f.writeByte(stringbytes[x])
                 x += 1
     f.writeByte(0)
+    return not doesntfit
 
 
 def writeDictionaryString(s, table):

@@ -75,6 +75,8 @@ def run(data, analyze=False, writepos=False):
                         ptrs = []
                         for i in range(datptr["count"]):
                             ptrs.append(f.readUInt() - 0x02000000)
+                            if "skip" in datptr:
+                                f.seek(datptr["skip"], 1)
                         for i in range(datptr["count"]):
                             f.seek(ptrs[i])
                             strstart = f.tell()

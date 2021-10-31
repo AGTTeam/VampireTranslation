@@ -42,6 +42,7 @@ def run(data, copybin=False, analyze=False):
         common.copyFile(infile, outfile)
         if os.path.isfile(data + "bmpcache.txt"):
             os.remove(data + "bmpcache.txt")
+    lastfreepos = 0
     with common.Stream(infile, "rb") as fin:
         ptrgroups, allptrs = game.getBINPointerGroups(fin)
         with common.Stream(outfile, "rb+") as f:
@@ -76,7 +77,8 @@ def run(data, copybin=False, analyze=False):
             if outofspace:
                 common.logMessage("Characters left out:", outchars)
             else:
-                common.logMessage("Room for", common.toHex(constants.mainptr["end"] - f.tell()), "more bytes")
+                lastfreepos = f.tell()
+                common.logMessage("Room for", common.toHex(constants.mainptr["end"] - lastfreepos), "more bytes")
             # Change pointers
             for ptrgroup in ptrgroups:
                 atstr = "@" + common.toHex(ptrgroup)
@@ -127,6 +129,7 @@ def run(data, copybin=False, analyze=False):
                     for datptr in datptrs:
                         writegroups = "writegroups" in datptr and datptr["writegroups"]
                         usedictionary = "dictionary" in datptr and datptr["dictionary"]
+                        redirect = "redirect" in datptr and datptr["redirect"]
                         wordwrap = "wordwrap" in datptr and datptr["wordwrap"] or 0
                         aligncenter = "aligncenter" in datptr and datptr["aligncenter"] or 0
                         fin.seek(datptr["offset"])
@@ -136,19 +139,21 @@ def run(data, copybin=False, analyze=False):
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
                                 allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
-                                                   "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap, "aligncenter": aligncenter})
+                                                   "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap, "aligncenter": aligncenter, "redirect": redirect})
                         else:
                             ptrs = []
                             for i in range(datptr["count"]):
                                 ptrpos = fin.tell()
                                 ptrs.append({"address": fin.readUInt() - 0x02000000, "pos": ptrpos})
+                                if "skip" in datptr:
+                                    fin.seek(datptr["skip"], 1)
                             for i in range(datptr["count"]):
                                 fin.seek(ptrs[i]["address"])
                                 strstart = fin.tell()
                                 jpstr = game.readString(fin, invtable)
                                 fin.readZeros(binsize)
                                 allstrings.append({"start": strstart, "end": fin.tell() - 1, "str": jpstr,
-                                                   "ptrpos": ptrs[i]["pos"], "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap, "aligncenter": aligncenter})
+                                                   "ptrpos": ptrs[i]["pos"], "writegroups": writegroups, "dictionary": usedictionary, "wordwrap": wordwrap, "aligncenter": aligncenter, "redirect": redirect})
                     # Check how much space is used by these strings and update them with the translations
                     minpos = 0xffffffff
                     maxpos = 0
@@ -181,12 +186,19 @@ def run(data, copybin=False, analyze=False):
                         common.logMessage(allspace)
                     # Start writing them
                     f.seek(minpos)
+                    writingmain = False
                     for jpstr in allstrings:
                         if "ptrpos" in jpstr and datname != "ItemShop":
                             common.logDebug("Writing pointer string", jpstr["str"], "at", common.toHex(f.tell()))
                             # Write the string and update the pointer
                             strpos = f.tell()
-                            game.writeString(f, jpstr["str"], table, dictionary if jpstr["dictionary"] else {}, maxlen=maxpos - f.tell(), writegroups=jpstr["writegroups"])
+                            stringfits = game.writeString(f, jpstr["str"], table, dictionary if jpstr["dictionary"] else {}, maxlen=maxpos - f.tell(), writegroups=jpstr["writegroups"], checkfit=jpstr["redirect"])
+                            if jpstr["redirect"] and not stringfits and lastfreepos > 0 and not writingmain:
+                                common.logDebug("String", jpstr["str"], "didn't fit, enabling writing to main...")
+                                f.seek(lastfreepos)
+                                maxpos = constants.mainptr["end"]
+                                game.writeString(f, jpstr["str"], table, dictionary if jpstr["dictionary"] else {}, maxlen=maxpos - f.tell(), writegroups=jpstr["writegroups"], checkfit=jpstr["redirect"])
+                                writingmain = True
                             f.writeUIntAt(jpstr["ptrpos"], strpos + 0x02000000)
                         else:
                             # Try to fit the string in the given space
@@ -195,6 +207,9 @@ def run(data, copybin=False, analyze=False):
                             game.writeString(f, jpstr["str"], table, dictionary if jpstr["dictionary"] else {}, maxlen=jpstr["end"] - f.tell(), writegroups=jpstr["writegroups"])
                             while f.tell() < jpstr["end"]:
                                 f.writeByte(0)
+                    if writingmain:
+                        lastfreepos = f.tell()
+    common.logMessage("Room for", common.toHex(constants.mainptr["end"] - lastfreepos), "more bytes")
     common.logMessage("Done! Translation is at {0:.2f}%".format((100 * transtot) / chartot))
 
     # Export font data, dictionary data and apply armips patch

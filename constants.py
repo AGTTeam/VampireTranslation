@@ -89,7 +89,8 @@ datptrs = {
     "Minigame":       {"offset": 0x1cd120, "count": 1},
     "Minigames":      {"offset": 0x1cd130, "count": 9},
     "CharacterNames": {"offset": 0x1cde40, "count": 8,        "dictionary": False, "aligncenter": 90},
-    "AdditionalText": {"offset": 0x1cee84,   "end": 0x1d2be4, "wordwrap": wordwrap},
+    "AdditionalText": {"offset": 0x1cde60, "count": 440, "skip": 4, "wordwrap": wordwrap, "redirect": True},
+    "MinigameSelect": {"offset": 0x1cec20, "count": 23, "wordwrap": wordwrap},
     "Prices":         {"offset": 0x1d3228, "count": 11},
     "ItemShop": [
                       {"offset": 0x1d3218, "count": 4},
