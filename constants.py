@@ -24,7 +24,7 @@ datptrs = {
     "Letters": [
                       {"offset": 0x0a3c30, "count": 24},
                       {"offset": 0x0ac238, "count": 2},
-                      {"offset": 0x0ac2b4, "count": 1},
+                      {"offset": 0x0ac2b4, "count": 1, "redirect": True},
                       {"offset": 0x0b07c4, "count": 9},
                       {"offset": 0x0b07f0, "count": 1},
                       {"offset": 0x0b0bd8, "count": 1},
