@@ -1,4 +1,5 @@
 # Vampire Translation
+This repository is for the tool used to translate the game. If you're looking for the English patch, click [here](http://www.romhacking.net/translations/6369/).  
 ## Setup
 Create a "data" folder and copy the rom as "vampire.nds" in it.  
 ## Run from binary
