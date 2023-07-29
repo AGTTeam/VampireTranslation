@@ -19,7 +19,7 @@ def readString(f, invtable, ptrs=None):
         elif byte == 0xa:
             ret += "|"
         elif byte < 0xa:
-            ret += "<" + common.toHex(byte) + ">"
+            ret += "<" + common.toHex(byte, True) + ">"
             if ptrs is not None:
                 while True:
                     if f.tell() in ptrs:
@@ -32,13 +32,13 @@ def readString(f, invtable, ptrs=None):
                     if foundcode:
                         break
                     byte = f.readByte()
-                    ret += "<" + common.toHex(byte) + ">"
+                    ret += "<" + common.toHex(byte, True) + ">"
         else:
             charcode = (group * 0x100) + byte
             if charcode not in invtable:
                 common.logWarning("Charcode", common.toHex(charcode), "not found")
-                ret += "<" + common.toHex(group) + ">"
-                ret += "<" + common.toHex(byte) + ">"
+                ret += "<" + common.toHex(group, True) + ">"
+                ret += "<" + common.toHex(byte, True) + ">"
                 group = 0
             else:
                 ret += invtable[charcode]
@@ -47,10 +47,10 @@ def readString(f, invtable, ptrs=None):
 
 def readData(f, ptrs):
     byte = f.readByte()
-    ret = "<" + common.toHex(byte) + ">"
+    ret = "<" + common.toHex(byte, True) + ">"
     while f.tell() not in ptrs:
         byte = f.readByte()
-        ret += "<" + common.toHex(byte) + ">"
+        ret += "<" + common.toHex(byte, True) + ">"
     return ret
 
 

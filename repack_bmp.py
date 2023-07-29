@@ -33,8 +33,8 @@ def run(data, testuncomp=False):
                 skipfile = True
                 for subfile in common.getFiles(newsubfolder):
                     subname = archive + "/" + subfile
-                    newcrc = common.toHex(common.crcFile(newsubfolder + subfile))
-                    oldcrc = common.toHex(common.crcFile(oldsubfolder + subfile))
+                    newcrc = common.toHex(common.crcFile(newsubfolder + subfile), True)
+                    oldcrc = common.toHex(common.crcFile(oldsubfolder + subfile), True)
                     if newcrc == oldcrc and subname not in cache:
                         common.logDebug("Skipping", subname, newcrc, oldcrc)
                         filediff.append(False)
@@ -96,7 +96,7 @@ def compress(indata):
     complen = firstcopy + 1
     while readbytes < inlen - 1:
         oldlength = min(readbytes, 0x400)
-        length, disp = compression.getOccurrenceLength(indata, readbytes, min(inlen - readbytes, 0x22), readbytes - oldlength, oldlength, 1)
+        length, disp = getOccurrenceLength(indata, readbytes, min(inlen - readbytes, 0x22), readbytes - oldlength, oldlength, 1)
         # Copy firstcopy bytes
         if length < 3:
             # common.logDebug("Copying bytes", common.toHex(complen), common.toHex(readbytes))
@@ -119,3 +119,32 @@ def compress(indata):
             out[complen+1] = offset
             complen += 2
     return out[:complen]
+
+
+def getOccurrenceLength(indata, newptr, newlength, oldptr, oldlength, mindisp=1):
+    disp = 0
+    if newlength == 0:
+        return 0
+    maxlength = 0
+    # try every possible 'disp' value (disp = oldLength - i)
+    for i in range(oldlength - mindisp):
+        # work from the start of the old data to the end, to mimic the original implementation's behaviour
+        # (and going from start to end or from end to start does not influence the compression ratio anyway)
+        currentoldstart = oldptr + i
+        currentlength = 0
+        # determine the length we can copy if we go back (oldLength - i) bytes
+        # always check the next 'newLength' bytes, and not just the available 'old' bytes,
+        # as the copied data can also originate from what we're currently trying to compress.
+        for j in range(newlength):
+            # stop when the bytes are no longer the same
+            if indata[currentoldstart + j] != indata[newptr + j]:
+                break
+            currentlength += 1
+        # update the optimal value
+        if currentlength > maxlength:
+            maxlength = currentlength
+            disp = oldlength - i
+            # if we cannot do better anyway, stop trying.
+            if maxlength == newlength:
+                break
+    return maxlength, disp

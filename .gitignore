@@ -1,9 +1,7 @@
 __pycache__
-
-build
-VampireData
+.DS_Store
 *.log
-*.exe
+VampireData
+*.nds
+*.sav
 notes.md
-armips
-ndstool

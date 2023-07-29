@@ -81,7 +81,7 @@ def run(data, copybin=False, analyze=False):
                 common.logMessage("Room for", common.toHex(constants.mainptr["end"] - lastfreepos), "more bytes")
             # Change pointers
             for ptrgroup in ptrgroups:
-                atstr = "@" + common.toHex(ptrgroup)
+                atstr = "@" + common.toHex(ptrgroup, True)
                 for ptr in ptrgroups[ptrgroup]:
                     f.seek(ptr["pos"])
                     fin.seek(ptr["ptr"])

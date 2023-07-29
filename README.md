@@ -1,18 +1,10 @@
 # Vampire Translation
 This repository is for the tool used to translate the game. If you're looking for the English patch, click [here](http://www.romhacking.net/translations/6369/).  
 ## Setup
-Create a "data" folder and copy the rom as "vampire.nds" in it.  
-## Run from binary
-Download the latest [release](https://github.com/Illidanz/VampireTranslation/releases) outside the data folder.  
-Run `tool extract` to extract everything and `tool repack` to repack after editing.  
-Run `tool extract --help` or `tool repack --help` for more info.  
-## Run from source
-Install [Python 3.8](https://www.python.org/downloads/) and pipenv.  
-Download [ndstool.exe](https://www.darkfader.net/ds/files/ndstool.exe).  
-Download [armips.exe](https://github.com/Kingcom/armips/releases).  
-Download xdelta.exe.  
-Run `pipenv install`.  
-Run the tool with `pipenv run tool.py` or build with `pipenv run pyinstaller tool.spec`.  
+Install [Python 3](https://www.python.org/downloads/).  
+Download this repository by downloading and extracting it, or cloning it.  
+Copy the original Japanese rom into the same folder and rename it as `vampire.nds`.  
+Run `run_windows.bat` (for Windows) or `run_bash` (for OSX/Linux) to run the tool.  
 ## Font Editing
 Copy `font_output.png` to `font_input.png` and edit it.  
 The glyphs should be in the same order as the `fontconfig.txt` file, where you should also specify the glyph size.  
@@ -37,3 +29,8 @@ Comments can be added at the end of lines by using `#`.
 Rename the out\_\* folders to work\_\* (out_IMG to work_IMG, etc).  
 Edit the images in the work folder(s). The palette on the right should be followed but the repacker will try to approximate other colors to the closest one.  
 If an image doesn't require repacking, it should be deleted from the work folder.  
+## Run from command line
+This is not recommended if you're not familiar with Python and the command line.  
+After following the Setup section, run `pipenv sync` to install dependencies.  
+Run `pipenv run python tool.py extract` to extract everything, and `pipenv run python tool.py repack` to repack.  
+You can use switches like `pipenv run python tool.py repack --bin` to only repack certain parts to speed up the process.  

@@ -5,9 +5,9 @@ import click
 from hacktools import common, nds
 import game
 
-version = "1.2.1"
+version = "1.3.0"
 data = "VampireData/"
-romfile = data + "vampire.nds"
+romfile = "vampire.nds"
 rompatch = data + "vampire_patched.nds"
 bannerfile = data + "repack/banner.bin"
 patchfile = data + "patch.xdelta"
@@ -41,7 +41,7 @@ def extract(rom, bin, bmp, fdt, img):
 
 
 @common.cli.command()
-@click.option("--no-rom", is_flag=True, default=False)
+@click.option("--no-rom", is_flag=True, default=False, hidden=True)
 @click.option("--bin", is_flag=True, default=False)
 @click.option("--fdt", is_flag=True, default=False)
 @click.option("--img", is_flag=True, default=False)
@@ -68,7 +68,7 @@ def repack(no_rom, bin, fdt, img, bmp):
         nds.repackRom(romfile, rompatch, outfolder, patchfile)
 
 
-@common.cli.command()
+@common.cli.command(hidden=True)
 @click.argument("text")
 def translate(text):
     table, _ = game.getTable(data)
@@ -79,12 +79,12 @@ def translate(text):
         chargroup = charcode >> 8
         if group != chargroup:
             group = chargroup
-            ret += common.toHex(group)
-        ret += common.toHex(charcode & 0xff)
+            ret += common.toHex(group, True)
+        ret += common.toHex(charcode & 0xff, True)
     common.logMessage(ret)
 
 
-@common.cli.command()
+@common.cli.command(hidden=True)
 def frequency():
     with codecs.open(data + "bin_input.txt", "r", "utf8") as bin:
         section = common.getSection(bin, "")
@@ -116,8 +116,4 @@ def frequency():
 
 
 if __name__ == "__main__":
-    click.echo("VampireTranslation version " + version)
-    if not os.path.isdir(data):
-        common.logError(data + " folder not found.")
-        quit()
-    common.runCLI(common.cli)
+    common.setupTool("VampireTranslation", version, data, romfile, 0x1cb4b97c)

@@ -41,10 +41,10 @@ def run(data, analyze=False, writepos=False):
                     if jpstr not in seen:
                         if firstwrite:
                             firstwrite = False
-                            bin.write("\n# " + common.toHex(ptrgroup) + "\n")
+                            bin.write("\n# " + common.toHex(ptrgroup, True) + "\n")
                         seen.append(jpstr)
                         if writepos:
-                            bin.write("#" + common.toHex(strstart) + "\n")
+                            bin.write("#" + common.toHex(strstart, True) + "\n")
                         bin.write(jpstr + "=\n")
         common.logMessage("Done!")
         common.logMessage("Extracting DAT to", datfile, "...")
